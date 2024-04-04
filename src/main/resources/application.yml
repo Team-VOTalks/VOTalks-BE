@@ -1,10 +1,3 @@
 spring:
-  config:
-    import:
-      - classpath:/yaml/application-dev.yml
-      - classpath:/yaml/application-local.yml
-      - classpath:/yaml/logging/application-log.yml
   profiles:
-    group:
-      logging: dev, log
     active: local

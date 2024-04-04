@@ -133,7 +133,6 @@ fabric.properties
 # Icon must end with two \r
 Icon
 
-
 # Thumbnails
 ._*
 
@@ -199,4 +198,4 @@ gradle-app.setting
 # Java heap dump
 *.hprof
 
-# End of https://www.toptal.com/developers/gitignore/api/intellij,gradle,jetbrains,macos,windows
+application-dev.yml
