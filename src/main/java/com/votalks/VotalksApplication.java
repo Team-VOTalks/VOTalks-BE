@@ -9,5 +9,4 @@ public class VotalksApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(VotalksApplication.class, args);
 	}
-
 }
