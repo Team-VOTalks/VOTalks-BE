@@ -198,4 +198,4 @@ gradle-app.setting
 # Java heap dump
 *.hprof
 
-application-dev.yml
+*/application-dev.yml
