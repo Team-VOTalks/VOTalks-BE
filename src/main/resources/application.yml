@@ -1,21 +1,10 @@
 spring:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console-vot
-
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:~/vot1
-    username: sa
-    password:
-
-
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+  config:
+    import:
+      - classpath:/yaml/application-dev.yml
+      - classpath:/yaml/application-local.yml
+      - classpath:/yaml/logging/application-log.yml
+  profiles:
+    group:
+      logging: dev, log
+    active: local
