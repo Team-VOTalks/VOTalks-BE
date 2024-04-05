@@ -19,6 +19,9 @@ import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.UuidVoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
+import com.votalks.global.error.exception.NotFoundException;
+import com.votalks.global.error.exception.ValidateException;
+import com.votalks.global.error.model.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,19 +40,43 @@ public class VoteService {
 		final List<VoteOption> voteOptions = dto.voteOptions().stream()
 			.map(optionValue -> VoteOption.create(optionValue, vote))
 			.toList();
-		final List<UuidVoteOption> uuidVoteOptions = voteOptions.stream()
-			.map(optionValue -> UuidVoteOption.create(uuid, optionValue))
-			.toList();
 
 		voteRepository.save(vote);
 		voteOptionRepository.saveAll(voteOptions);
-		uuidVoteOptionRepository.saveAll(uuidVoteOptions);
 	}
 
-	public void takeVote(VoteTakeDto voteTakeDto) {
-		final Vote vote = voteRepository.findById(voteTakeDto.voteId())
-			.orElseThrow();
+	public void takeVote(VoteTakeDto dto, Long id) {
+		final Uuid uuid = getOrCreate(dto.uuid());
+		final Vote vote = voteRepository.findById(id)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+		final VoteOption voteOption = voteOptionRepository.findById(dto.voteOptionId())
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_OPTION_FOUND));
 
+		validateBelogToVote(voteOption, vote);
+		validateAlreadyVoted(uuid, voteOption);
+		validateLimit(vote, uuid);
+
+		final UuidVoteOption uuidVoteOption = UuidVoteOption.create(uuid, voteOption);
+		uuidVoteOptionRepository.save(uuidVoteOption);
+		voteOption.take();
+	}
+
+	private void validateBelogToVote(VoteOption voteOption, Vote vote) {
+		if (voteOption.getVote() != vote) {
+			throw new ValidateException(ErrorCode.BAD_REQUEST);
+		}
+	}
+
+	private void validateLimit(Vote vote, Uuid uuid) {
+		if (vote.getSelectCount() == uuidVoteOptionRepository.countByUuidAndVoteOptionVote(uuid, vote)) {
+			throw new ValidateException(ErrorCode.VOTE_LIMIT_REACHED);
+		}
+	}
+
+	private void validateAlreadyVoted(Uuid uuid, VoteOption voteOption) {
+		if (uuidVoteOptionRepository.existsByUuidAndVoteOption(uuid, voteOption)) {
+			throw new ValidateException(ErrorCode.FAIL_ALREADY_VOTE);
+		}
 	}
 
 	private Uuid getOrCreate(String uuid) {

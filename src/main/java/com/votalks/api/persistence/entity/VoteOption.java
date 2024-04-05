@@ -41,6 +41,10 @@ public class VoteOption {
 	public static VoteOption create(String optionValue, Vote vote) {
 		return new VoteOption(optionValue, vote);
 	}
+
+	public void take() {
+		this.voteCount++;
+	}
 }
 
 

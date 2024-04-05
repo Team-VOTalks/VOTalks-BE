@@ -1,11 +1,13 @@
 package com.votalks.api.controller;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.service.VoteService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,5 +21,10 @@ public class VoteController {
 	@PostMapping
 	public void create(@RequestBody VoteCreateDto dto) {
 		voteService.create(dto);
+	}
+
+	@PostMapping("/{id}")
+	public void takeVote(@RequestBody VoteTakeDto dto, @PathVariable Long id) {
+		voteService.takeVote(dto, id);
 	}
 }
