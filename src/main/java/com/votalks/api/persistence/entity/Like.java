@@ -1,4 +1,4 @@
-package com.votalks.api.persistence.domain;
+package com.votalks.api.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

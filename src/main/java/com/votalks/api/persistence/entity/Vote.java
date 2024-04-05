@@ -1,8 +1,10 @@
-package com.votalks.api.persistence.domain;
+package com.votalks.api.persistence.entity;
 
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
+
+import com.votalks.api.dto.vote.VoteCreateDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,4 +51,30 @@ public class Vote {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "uuid")
 	private Uuid uuid;
+
+	private Vote(
+		String title,
+		String description,
+		LocalDateTime createdAt,
+		boolean isDuplicated,
+		Category category,
+		Uuid uuid
+	) {
+		this.title = title;
+		this.description = description;
+		this.createdAt = createdAt;
+		this.isDuplicated = isDuplicated;
+		this.category = category;
+		this.uuid = uuid;
+	}
+
+	public static Vote create(VoteCreateDto dto, LocalDateTime localDateTime, Uuid uuid) {
+		return new Vote(
+			dto.title(),
+			dto.description(),
+			localDateTime,
+			dto.isDuplicated(),
+			Category.valueOf(dto.category()),
+			uuid);
+	}
 }

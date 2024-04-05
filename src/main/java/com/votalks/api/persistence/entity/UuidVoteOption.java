@@ -1,4 +1,4 @@
-package com.votalks.api.persistence.domain;
+package com.votalks.api.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,23 +15,28 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "vote_option")
+@Table(name = "uuid_vote_option")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class VoteOption {
+public class UuidVoteOption {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "content", nullable = false, length = 50)
-	private String content;
-
-	@Column(name = "vote_count", nullable = false)
-	private int voteCount;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "uuid")
+	private Uuid uuid;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "vote_id")
-	private Vote vote;
+	@JoinColumn(name = "vote_option_id")
+	private VoteOption voteOption;
+
+	private UuidVoteOption(Uuid uuid, VoteOption voteOption) {
+		this.uuid = uuid;
+		this.voteOption = voteOption;
+	}
+
+	public static UuidVoteOption generated(Uuid uuid, VoteOption voteOption) {
+		return new UuidVoteOption(uuid, voteOption);
+	}
 }
-
-

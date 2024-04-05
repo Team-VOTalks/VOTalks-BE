@@ -1,4 +1,4 @@
-package com.votalks.api.persistence.domain;
+package com.votalks.api.persistence.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
