@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+<<<<<<< HEAD
 @Table(name = "like")
+=======
+@Table(name = "comment")
+>>>>>>> 64f53192a7ca5b881f668fa6734aa3c3a6b386a8
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Like {
 	@Id
