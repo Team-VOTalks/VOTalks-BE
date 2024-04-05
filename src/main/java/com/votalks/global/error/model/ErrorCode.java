@@ -15,8 +15,8 @@ public enum ErrorCode {
 	FAIL_NOT_VOTE_FOUND("투표를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
 	BAD_REQUEST("잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
-	VOTE_LIMIT_REACHED("투표 한도에 도달했습니다", HttpStatus.FORBIDDEN),
-	FAIL_ALREADY_VOTE("이미 투표를 하셨습니다.", HttpStatus.FORBIDDEN);
+	VOTE_LIMIT_REACHED("투표 한도에 도달했습니다", HttpStatus.BAD_REQUEST),
+	FAIL_ALREADY_VOTE("이미 투표를 하셨습니다.", HttpStatus.BAD_REQUEST);
 
 	private String message;
 	private HttpStatus statusCode;

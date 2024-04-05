@@ -42,7 +42,7 @@ public class VoteOption {
 		return new VoteOption(optionValue, vote);
 	}
 
-	public void take() {
+	public void select() {
 		this.voteCount++;
 	}
 }

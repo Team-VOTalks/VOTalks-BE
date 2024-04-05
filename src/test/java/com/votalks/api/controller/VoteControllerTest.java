@@ -78,7 +78,7 @@ class VoteControllerTest {
 			Arrays.asList("1번", "2번"),
 			2);
 
-		this.mockMvc.perform(post("/api/v1/vote")
+		this.mockMvc.perform(post("/api/v1/votes")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(voteCreateDto)))
 			.andExpect(status().isOk());
@@ -89,7 +89,7 @@ class VoteControllerTest {
 	void take_Vote_Success() throws Exception {
 		VoteTakeDto voteTakeDto = new VoteTakeDto(1L, null);
 
-		this.mockMvc.perform(post("/api/v1/vote/" + 1L)
+		this.mockMvc.perform(post("/api/v1/votes/" + 1L)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(voteTakeDto)))
 			.andExpect(status().isOk());

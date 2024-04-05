@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,10 +31,10 @@ public class Vote {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "title", length = 50, nullable = false)
+	@Column(name = "title", length = 100, nullable = false)
 	private String title;
 
-	@Column(name = "description", length = 80)
+	@Column(name = "description", length = 200)
 	private String description;
 
 	@Column(name = "create_at", nullable = false)
@@ -57,6 +58,7 @@ public class Vote {
 		}
 	}
 
+	@Builder
 	private Vote(
 		String title,
 		String description,
@@ -74,12 +76,13 @@ public class Vote {
 	}
 
 	public static Vote create(VoteCreateDto dto, LocalDateTime localDateTime, Uuid uuid) {
-		return new Vote(
-			dto.title(),
-			dto.description(),
-			localDateTime,
-			dto.selectCount(),
-			Category.valueOf(dto.category()),
-			uuid);
+		return Vote.builder()
+			.title(dto.title())
+			.description(dto.description())
+			.createdAt(localDateTime)
+			.selectCount(dto.selectCount())
+			.category(Category.valueOf(dto.category()))
+			.uuid(uuid)
+			.build();
 	}
 }

@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.votalks.global.error.exception.BadRequestException;
 import com.votalks.global.error.exception.NotFoundException;
-import com.votalks.global.error.exception.ValidateException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -15,8 +15,8 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 	}
 
-	@ExceptionHandler(ValidateException.class)
-	protected ResponseEntity<Object> handleValidateException(ValidateException e) {
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+	@ExceptionHandler(BadRequestException.class)
+	protected ResponseEntity<Object> handleValidateException(BadRequestException e) {
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 }
