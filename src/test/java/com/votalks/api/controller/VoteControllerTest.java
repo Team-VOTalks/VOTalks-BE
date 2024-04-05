@@ -51,7 +51,7 @@ class VoteControllerTest {
 	void setUp() {
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
 			null,
-			"테스트",
+			"테스트입니다.",
 			"TECH",
 			"테스트입니다",
 			Arrays.asList("1번", "2번"),
@@ -69,16 +69,16 @@ class VoteControllerTest {
 
 	@Test
 	@DisplayName("POST - 투표를 성공정으로 생성한다. - void")
-	void create_Vote_Success() throws Exception {
+	void create_vote_success() throws Exception {
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
 			null,
-			"테스트",
+			"테스트입니다.",
 			"TECH",
 			"테스트입니다",
 			Arrays.asList("1번", "2번"),
 			2);
 
-		this.mockMvc.perform(post("/api/v1/vote")
+		this.mockMvc.perform(post("/api/v1/votes")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(voteCreateDto)))
 			.andExpect(status().isOk());
@@ -86,10 +86,10 @@ class VoteControllerTest {
 
 	@Test
 	@DisplayName("POST - 성공적으로 투표한다 - void")
-	void take_Vote_Success() throws Exception {
+	void select_success() throws Exception {
 		VoteTakeDto voteTakeDto = new VoteTakeDto(1L, null);
 
-		this.mockMvc.perform(post("/api/v1/vote/" + 1L)
+		this.mockMvc.perform(post("/api/v1/votes/" + 1L)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(voteTakeDto)))
 			.andExpect(status().isOk());

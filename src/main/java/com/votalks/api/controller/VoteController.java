@@ -10,21 +10,22 @@ import com.votalks.api.dto.vote.VoteCreateDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.service.VoteService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/vote")
+@RequestMapping("/api/v1/votes")
 @RequiredArgsConstructor
 public class VoteController {
 	private final VoteService voteService;
 
 	@PostMapping
-	public void create(@RequestBody VoteCreateDto dto) {
+	public void create(@RequestBody @Valid VoteCreateDto dto) {
 		voteService.create(dto);
 	}
 
 	@PostMapping("/{id}")
-	public void takeVote(@RequestBody VoteTakeDto dto, @PathVariable Long id) {
-		voteService.takeVote(dto, id);
+	public void select(@RequestBody @Valid VoteTakeDto dto, @PathVariable Long id) {
+		voteService.select(dto, id);
 	}
 }
