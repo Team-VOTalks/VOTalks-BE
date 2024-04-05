@@ -36,7 +36,7 @@ public class UuidVoteOption {
 		this.voteOption = voteOption;
 	}
 
-	public static UuidVoteOption generated(Uuid uuid, VoteOption voteOption) {
+	public static UuidVoteOption create(Uuid uuid, VoteOption voteOption) {
 		return new UuidVoteOption(uuid, voteOption);
 	}
 }

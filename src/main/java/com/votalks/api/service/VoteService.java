@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidVoteOption;
 import com.votalks.api.persistence.entity.Vote;
@@ -31,13 +32,13 @@ public class VoteService {
 	private final UuidRepository uuidRepository;
 
 	public void create(VoteCreateDto dto) {
-		final Uuid uuid = generate(dto.uuid());
+		final Uuid uuid = getOrCreate(dto.uuid());
 		final Vote vote = Vote.create(dto, LocalDateTime.now(), uuid);
 		final List<VoteOption> voteOptions = dto.voteOptions().stream()
 			.map(optionValue -> VoteOption.create(optionValue, vote))
 			.toList();
 		final List<UuidVoteOption> uuidVoteOptions = voteOptions.stream()
-			.map(optionValue -> UuidVoteOption.generated(uuid, optionValue))
+			.map(optionValue -> UuidVoteOption.create(uuid, optionValue))
 			.toList();
 
 		voteRepository.save(vote);
@@ -45,7 +46,13 @@ public class VoteService {
 		uuidVoteOptionRepository.saveAll(uuidVoteOptions);
 	}
 
-	private Uuid generate(String uuid) {
+	public void takeVote(VoteTakeDto voteTakeDto) {
+		final Vote vote = voteRepository.findById(voteTakeDto.voteId())
+			.orElseThrow();
+
+	}
+
+	private Uuid getOrCreate(String uuid) {
 		if (uuid == null) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}

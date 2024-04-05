@@ -2,8 +2,6 @@ package com.votalks.api.persistence.entity;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.ColumnDefault;
-
 import com.votalks.api.dto.vote.VoteCreateDto;
 
 import jakarta.persistence.Column;
@@ -16,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -40,9 +39,8 @@ public class Vote {
 	@Column(name = "create_at", nullable = false)
 	private LocalDateTime createdAt;
 
-	@Column(name = "is_duplicated", nullable = false)
-	@ColumnDefault("false")
-	private boolean isDuplicated;
+	@Column(name = "select_count", nullable = false)
+	private int selectCount;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "category", nullable = false)
@@ -52,18 +50,25 @@ public class Vote {
 	@JoinColumn(name = "uuid")
 	private Uuid uuid;
 
+	@PrePersist
+	public void prePersist() {
+		if (this.selectCount == 0) {
+			this.selectCount = 1;
+		}
+	}
+
 	private Vote(
 		String title,
 		String description,
 		LocalDateTime createdAt,
-		boolean isDuplicated,
+		int selectCount,
 		Category category,
 		Uuid uuid
 	) {
 		this.title = title;
 		this.description = description;
 		this.createdAt = createdAt;
-		this.isDuplicated = isDuplicated;
+		this.selectCount = selectCount;
 		this.category = category;
 		this.uuid = uuid;
 	}
@@ -73,7 +78,7 @@ public class Vote {
 			dto.title(),
 			dto.description(),
 			localDateTime,
-			dto.isDuplicated(),
+			dto.selectCount(),
 			Category.valueOf(dto.category()),
 			uuid);
 	}
