@@ -69,6 +69,7 @@ class VoteControllerTest {
 	@Test
 	@DisplayName("POST - 투표를 성공정으로 생성한다. - void")
 	void create_vote_success() throws Exception {
+		// Given
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
 			null,
 			"테스트입니다.",
@@ -77,6 +78,7 @@ class VoteControllerTest {
 			Arrays.asList("1번", "2번"),
 			2);
 
+		// When & Then
 		this.mockMvc.perform(post("/api/v1/votes")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(voteCreateDto)))
@@ -86,11 +88,33 @@ class VoteControllerTest {
 	@Test
 	@DisplayName("POST - 성공적으로 투표한다 - void")
 	void select_success() throws Exception {
+		// Given
 		VoteTakeDto voteTakeDto = new VoteTakeDto(1L, null);
 
+		// When & Then
 		this.mockMvc.perform(post("/api/v1/votes/" + 1L)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(voteTakeDto)))
 			.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("GET - 특정 투표의 상세 정보를 성공적으로 가져온다. - VoteReadDto")
+	void read_voteSuccess() throws Exception {
+		// Given
+		Vote savedVote = voteRepository.findAll().get(0);
+
+		// When & Then
+		this.mockMvc.perform(get("/api/v1/votes/{id}", savedVote.getId())
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.title").value("테스트입니다."))
+			.andExpect(jsonPath("$.category").value("기술"))
+			.andExpect(jsonPath("$.createAt").exists())
+			.andExpect(jsonPath("$.description").value("테스트입니다"))
+			.andExpect(jsonPath("$.totalVoteCount").value(0))
+			.andExpect(jsonPath("$.voteOptionsWithCount.['1번']").value(0))
+			.andExpect(jsonPath("$.voteOptionsWithCount.['2번']").value(0))
+			.andExpect(jsonPath("$.totalVoteCount").value(0));
 	}
 }
