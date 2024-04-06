@@ -1,6 +1,5 @@
 package com.votalks.api.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +33,7 @@ public class VoteService {
 
 	public void create(VoteCreateDto dto) {
 		final Uuid uuid = getOrCreate(dto.uuid());
-		final Vote vote = Vote.create(dto, LocalDateTime.now(), uuid);
+		final Vote vote = Vote.create(dto, uuid);
 		final List<VoteOption> voteOptions = dto.voteOptions().stream()
 			.map(optionValue -> VoteOption.create(optionValue, vote))
 			.toList();

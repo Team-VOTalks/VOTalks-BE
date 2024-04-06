@@ -3,7 +3,6 @@ package com.votalks.api.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,7 +56,7 @@ class VoteControllerTest {
 			Arrays.asList("1번", "2번"),
 			2);
 
-		Vote vote = Vote.create(voteCreateDto, LocalDateTime.now(), null);
+		Vote vote = Vote.create(voteCreateDto, null);
 		voteRepository.save(vote);
 
 		final List<VoteOption> voteOptions = voteCreateDto.voteOptions().stream()
