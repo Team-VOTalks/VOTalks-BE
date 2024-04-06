@@ -2,10 +2,14 @@ package com.votalks.api.persistence.entity;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.votalks.api.dto.vote.VoteCreateDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -24,6 +28,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(name = "vote")
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Vote {
 	@Id
@@ -37,7 +42,8 @@ public class Vote {
 	@Column(name = "description", length = 200)
 	private String description;
 
-	@Column(name = "create_at", nullable = false)
+	@CreatedDate
+	@Column(name = "create_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
 	@Column(name = "select_count", nullable = false)
@@ -75,11 +81,10 @@ public class Vote {
 		this.uuid = uuid;
 	}
 
-	public static Vote create(VoteCreateDto dto, LocalDateTime localDateTime, Uuid uuid) {
+	public static Vote create(VoteCreateDto dto, Uuid uuid) {
 		return Vote.builder()
 			.title(dto.title())
 			.description(dto.description())
-			.createdAt(localDateTime)
 			.selectCount(dto.selectCount())
 			.category(Category.valueOf(dto.category()))
 			.uuid(uuid)
