@@ -43,7 +43,11 @@ public class VoteService {
 		voteOptionRepository.saveAll(voteOptions);
 	}
 
+<<<<<<< HEAD
 	public void select(VoteTakeDto dto, Long id) {
+=======
+	public void selectVote(VoteTakeDto dto, Long id) {
+>>>>>>> 1b56c2f5150e87c6edb3e3c58750e2958a56b74a
 		final Uuid uuid = getOrCreate(dto.uuid());
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
