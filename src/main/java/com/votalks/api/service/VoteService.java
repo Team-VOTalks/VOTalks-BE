@@ -41,6 +41,7 @@ public class VoteService {
 
 		voteRepository.save(vote);
 		voteOptionRepository.saveAll(voteOptions);
+		//test
 	}
 
 	public void select(VoteTakeDto dto, Long id) {
