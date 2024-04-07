@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,22 +49,23 @@ class VoteControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		VoteCreateDto voteCreateDto = new VoteCreateDto(
-			null,
-			"테스트입니다.",
-			"TECH",
-			"테스트입니다",
-			Arrays.asList("1번", "2번"),
-			2);
+		List<VoteCreateDto> voteCreateDtos = List.of(
+			new VoteCreateDto(null, "테스트1", "TECH", "테스트 설명1", Arrays.asList("1번", "2번"), 2),
+			new VoteCreateDto(null, "테스트2", "CULTURE", "테스트 설명2", Arrays.asList("3번", "4번"), 2),
+			new VoteCreateDto(null, "테스트3", "DAILY", "테스트 설명3", Arrays.asList("5번", "6번"), 2)
+		);
 
-		Vote vote = Vote.create(voteCreateDto, null);
-		voteRepository.save(vote);
+		for (VoteCreateDto voteCreateDto : voteCreateDtos) {
+			Vote vote = Vote.create(voteCreateDto, null);
+			vote = voteRepository.save(vote);
 
-		final List<VoteOption> voteOptions = voteCreateDto.voteOptions().stream()
-			.map(optionValue -> VoteOption.create(optionValue, vote))
-			.toList();
+			Vote finalVote = vote;
+			List<VoteOption> voteOptions = voteCreateDto.voteOptions().stream()
+				.map(optionValue -> VoteOption.create(optionValue, finalVote))
+				.collect(Collectors.toList());
 
-		voteOptionRepository.saveAll(voteOptions);
+			voteOptionRepository.saveAll(voteOptions);
+		}
 	}
 
 	@Test
@@ -108,13 +110,34 @@ class VoteControllerTest {
 		this.mockMvc.perform(get("/api/v1/votes/{id}", savedVote.getId())
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.title").value("테스트입니다."))
+			.andExpect(jsonPath("$.title").value("테스트1"))
 			.andExpect(jsonPath("$.category").value("기술"))
 			.andExpect(jsonPath("$.createAt").exists())
-			.andExpect(jsonPath("$.description").value("테스트입니다"))
+			.andExpect(jsonPath("$.description").value("테스트 설명1"))
 			.andExpect(jsonPath("$.totalVoteCount").value(0))
 			.andExpect(jsonPath("$.voteOptionsWithCount.['1번']").value(0))
 			.andExpect(jsonPath("$.voteOptionsWithCount.['2번']").value(0))
 			.andExpect(jsonPath("$.totalVoteCount").value(0));
 	}
+
+	@Test
+	@DisplayName("GET - 첫 페이지의 3개의 값이 성공적으로 가져온다")
+	void readAll_votes_Success() throws Exception {
+		// When & Then
+		this.mockMvc.perform(get("/api/v1/votes")
+				.param("page", "0")
+				.param("size", "3")
+				.param("category", "TECH")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content").exists())
+			.andExpect(jsonPath("$.content[0].title").exists())
+			.andExpect(jsonPath("$.content[0].category").exists())
+			.andExpect(jsonPath("$.content[0].createAt").exists())
+			.andExpect(jsonPath("$.content[0].description").exists())
+			.andExpect(jsonPath("$.content[0].totalVoteCount").isNumber())
+			.andExpect(jsonPath("$.pageable.pageSize").value(3))
+			.andExpect(jsonPath("$.pageable.pageNumber").value(0));
+	}
+
 }

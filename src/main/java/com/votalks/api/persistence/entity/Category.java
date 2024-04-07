@@ -11,4 +11,13 @@ public enum Category {
 	DAILY("일상");
 
 	private final String name;
+
+	public static boolean contains(String category) {
+		for (Category c : Category.values()) {
+			if (c.name().equals(category)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

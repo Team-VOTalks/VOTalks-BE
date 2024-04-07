@@ -1,16 +1,24 @@
 package com.votalks.api.service;
 
+import static java.util.function.Predicate.*;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
 import com.votalks.api.dto.vote.VoteReadDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
+import com.votalks.api.persistence.entity.Category;
 import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidVoteOption;
 import com.votalks.api.persistence.entity.Vote;
@@ -85,6 +93,34 @@ public class VoteService {
 		int totalCommentCount = commentRepository.countByVote(vote);
 
 		return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<VoteReadDto> readAll(int page, int size, String category) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		Page<Vote> votes = getPagedVotesFilteredByCategory(category, pageable);
+
+		return votes.map(vote -> {
+			Map<String, Integer> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
+				.stream()
+				.collect(Collectors.toMap(
+					VoteOption::getContent,
+					VoteOption::getVoteCount
+				));
+
+			int totalVoteCount = voteOptionsWithCounts.values().stream().mapToInt(Integer::intValue).sum();
+			int totalCommentCount = commentRepository.countByVote(vote);
+
+			return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+		});
+	}
+
+	private Page<Vote> getPagedVotesFilteredByCategory(String category, Pageable pageable) {
+		return Optional.ofNullable(category)
+			.filter(not(String::isBlank))
+			.filter(Category::contains)
+			.map(c -> voteRepository.findAllByCategory(Category.valueOf(category), pageable))
+			.orElseGet(() -> voteRepository.findAll(pageable));
 	}
 
 	private void validateBelongToVote(VoteOption voteOption, Vote vote) {
