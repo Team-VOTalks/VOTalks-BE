@@ -1,11 +1,13 @@
 package com.votalks.api.persistence.entity;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteReadDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +20,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -57,13 +58,6 @@ public class Vote {
 	@JoinColumn(name = "uuid")
 	private Uuid uuid;
 
-	@PrePersist
-	public void prePersist() {
-		if (this.selectCount == 0) {
-			this.selectCount = 1;
-		}
-	}
-
 	@Builder
 	private Vote(
 		String title,
@@ -88,6 +82,23 @@ public class Vote {
 			.selectCount(dto.selectCount())
 			.category(Category.valueOf(dto.category()))
 			.uuid(uuid)
+			.build();
+	}
+
+	public static VoteReadDto read(
+		Vote vote,
+		int totalVoteCount,
+		Map<String, Integer> voteOption,
+		int totalCommentCount
+	) {
+		return VoteReadDto.builder()
+			.title(vote.title)
+			.category(vote.category.getName())
+			.createAt(vote.createdAt)
+			.totalVoteCount(totalVoteCount)
+			.description(vote.description)
+			.voteOptionsWithCount(voteOption)
+			.totalCommentCount(totalCommentCount)
 			.build();
 	}
 }

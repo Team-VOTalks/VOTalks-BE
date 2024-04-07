@@ -1,17 +1,21 @@
 package com.votalks.api.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteReadDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidVoteOption;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.entity.VoteOption;
+import com.votalks.api.persistence.repository.CommentRepository;
 import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.UuidVoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteOptionRepository;
@@ -30,6 +34,7 @@ public class VoteService {
 	private final VoteOptionRepository voteOptionRepository;
 	private final UuidVoteOptionRepository uuidVoteOptionRepository;
 	private final UuidRepository uuidRepository;
+	private final CommentRepository commentRepository;
 
 	public void create(VoteCreateDto dto) {
 		final Uuid uuid = getOrCreate(dto.uuid());
@@ -50,7 +55,7 @@ public class VoteService {
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_OPTION_FOUND));
 		final int limit = uuidVoteOptionRepository.countByUuidAndVoteOption(uuid, voteOption);
 
-		validateBelogToVote(voteOption, vote);
+		validateBelongToVote(voteOption, vote);
 		validateAlreadyVoted(uuid, voteOption);
 		validateLimit(vote, limit);
 		voteOption.select();
@@ -59,7 +64,30 @@ public class VoteService {
 		uuidVoteOptionRepository.save(uuidVoteOption);
 	}
 
-	private void validateBelogToVote(VoteOption voteOption, Vote vote) {
+	@Transactional(readOnly = true)
+	public VoteReadDto read(Long id) {
+		final Vote vote = voteRepository.findById(id)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+
+		Map<String, Integer> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
+			.stream()
+			.collect(Collectors.toMap(
+				VoteOption::getContent,
+				VoteOption::getVoteCount
+			));
+
+		int totalVoteCount = voteOptionsWithCounts
+			.values()
+			.stream()
+			.mapToInt(Integer::intValue)
+			.sum();
+
+		int totalCommentCount = commentRepository.countByVote(vote);
+
+		return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+	}
+
+	private void validateBelongToVote(VoteOption voteOption, Vote vote) {
 		if (!voteOption.getVote().equals(vote)) {
 			throw new BadRequestException(ErrorCode.BAD_REQUEST);
 		}
