@@ -4,8 +4,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.votalks.api.dto.comment.CommentCreateDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +22,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,6 +39,10 @@ public class Comment {
 
 	@Column(name = "content", length = 50, nullable = false)
 	private String content;
+
+	@Column(name = "user_number")
+	@ColumnDefault("0")
+	private int userNumber;
 
 	@CreatedDate
 	@Column(name = "create_at", nullable = false, updatable = false)
@@ -54,4 +62,37 @@ public class Comment {
 
 	@OneToMany(mappedBy = "comment", orphanRemoval = true)
 	private List<Comment> reply = new ArrayList<>();
+
+	@Builder
+	private Comment(
+		String content,
+		int userNumber,
+		LocalDateTime createdAt,
+		Vote vote,
+		Uuid uuid,
+		Comment comment,
+		List<Comment> reply
+	) {
+		this.content = content;
+		this.userNumber = userNumber;
+		this.createdAt = createdAt;
+		this.vote = vote;
+		this.uuid = uuid;
+		this.comment = comment;
+		this.reply = reply;
+	}
+
+	public static Comment create(
+		CommentCreateDto dto,
+		Uuid uuid,
+		Vote vote,
+		int userNumber
+	) {
+		return Comment.builder()
+			.content(dto.content())
+			.uuid(uuid)
+			.userNumber(userNumber)
+			.vote(vote)
+			.build();
+	}
 }
