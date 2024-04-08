@@ -86,7 +86,7 @@ public class Vote {
 			.build();
 	}
 
-	public static VoteReadDto read(
+	public static VoteReadDto toVoteReadDto(
 		Vote vote,
 		int totalVoteCount,
 		List<VoteOptionWithCountDto> voteOptionWithCounts,

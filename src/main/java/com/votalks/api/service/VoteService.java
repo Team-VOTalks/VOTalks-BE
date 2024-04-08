@@ -90,7 +90,7 @@ public class VoteService {
 
 		final int totalCommentCount = commentRepository.countByVote(vote);
 
-		return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+		return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 	}
 
 	@Transactional(readOnly = true)
@@ -112,7 +112,7 @@ public class VoteService {
 
 			final int totalCommentCount = commentRepository.countByVote(vote);
 
-			return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+			return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 		});
 	}
 

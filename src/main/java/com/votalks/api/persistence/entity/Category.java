@@ -1,5 +1,11 @@
 package com.votalks.api.persistence.entity;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,12 +20,11 @@ public enum Category {
 	FAMILY("가족");
 	private final String name;
 
+	private static final Map<String, Category> names =
+		Collections.unmodifiableMap(Stream.of(values())
+			.collect(Collectors.toMap(Category::getName, Function.identity())));
+
 	public static boolean contains(String category) {
-		for (Category c : Category.values()) {
-			if (c.name().equals(category)) {
-				return true;
-			}
-		}
-		return false;
+		return names.containsKey(category);
 	}
 }
