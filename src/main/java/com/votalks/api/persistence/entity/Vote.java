@@ -1,12 +1,13 @@
 package com.votalks.api.persistence.entity;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteOptionWithCountDto;
 import com.votalks.api.dto.vote.VoteReadDto;
 
 import jakarta.persistence.Column;
@@ -40,7 +41,7 @@ public class Vote {
 	@Column(name = "title", length = 100, nullable = false)
 	private String title;
 
-	@Column(name = "description", length = 200)
+	@Column(name = "description", length = 300)
 	private String description;
 
 	@CreatedDate
@@ -88,16 +89,17 @@ public class Vote {
 	public static VoteReadDto toVoteReadDto(
 		Vote vote,
 		int totalVoteCount,
-		Map<String, Integer> voteOption,
+		List<VoteOptionWithCountDto> voteOptionWithCounts,
 		int totalCommentCount
 	) {
 		return VoteReadDto.builder()
+			.voteId(vote.id)
 			.title(vote.title)
 			.category(vote.category.getName())
 			.createAt(vote.createdAt)
 			.totalVoteCount(totalVoteCount)
 			.description(vote.description)
-			.voteOptionsWithCount(voteOption)
+			.voteOptionWithCounts(voteOptionWithCounts)
 			.totalCommentCount(totalCommentCount)
 			.build();
 	}

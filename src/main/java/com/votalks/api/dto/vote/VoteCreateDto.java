@@ -10,15 +10,15 @@ import jakarta.validation.constraints.NotNull;
 
 public record VoteCreateDto(
 	String uuid,
-	@NotBlank @Length(min = 5, message = "투표 제목은 최소 5자 이상이어야 합니다.")
+	@NotBlank @Length(min = 4, message = "투표 제목은 최소 4자 이상이어야 합니다.")
 	String title,
-	@NotBlank
+	@NotBlank(message = "카테고리는 필수로 입력하셔야 합니다.")
 	String category,
-	@Length(max = 200, message = "투표 설명은 최대 200자까지 가능합니다.")
+	@Length(max = 300, message = "투표 설명은 최대 300자까지 가능합니다.")
 	String description,
-	@NotNull
+	@NotNull(message = "투표 선택지는 필수로 입력하셔야 합니다.")
 	List<String> voteOptions,
-	@Min(value = 1, message = "투표 선택의 수는 초소 1 이상이어야 합니다.")
+	@Min(value = 1, message = "투표 선택의 수는 최소 1 이상이어야 합니다.")
 	int selectCount
 ) {
 }
