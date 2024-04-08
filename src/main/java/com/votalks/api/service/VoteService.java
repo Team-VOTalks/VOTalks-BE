@@ -77,6 +77,18 @@ public class VoteService {
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 
+		return getReadDto(vote);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<VoteReadDto> readAll(int page, int size, String category) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		Page<Vote> votes = getPagedVotesFilteredByCategory(category, pageable);
+
+		return votes.map(this::getReadDto);
+	}
+
+	private VoteReadDto getReadDto(Vote vote) {
 		final List<VoteOptionWithCountDto> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
 			.stream()
 			.map(voteOption -> new VoteOptionWithCountDto(voteOption.getId(), voteOption.getContent(),
@@ -91,29 +103,6 @@ public class VoteService {
 		final int totalCommentCount = commentRepository.countByVote(vote);
 
 		return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
-	}
-
-	@Transactional(readOnly = true)
-	public Page<VoteReadDto> readAll(int page, int size, String category) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		Page<Vote> votes = getPagedVotesFilteredByCategory(category, pageable);
-
-		return votes.map(vote -> {
-			final List<VoteOptionWithCountDto> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
-				.stream()
-				.map(voteOption -> new VoteOptionWithCountDto(voteOption.getId(), voteOption.getContent(),
-					voteOption.getVoteCount()))
-				.toList();
-
-			final int totalVoteCount = voteOptionsWithCounts.stream()
-				.map(VoteOptionWithCountDto::count)
-				.mapToInt(Integer::intValue)
-				.sum();
-
-			final int totalCommentCount = commentRepository.countByVote(vote);
-
-			return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
-		});
 	}
 
 	private Page<Vote> getPagedVotesFilteredByCategory(String category, Pageable pageable) {
