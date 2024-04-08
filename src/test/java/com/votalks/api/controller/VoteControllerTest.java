@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteOptionWithCountDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.entity.VoteOption;
@@ -50,8 +51,8 @@ class VoteControllerTest {
 	@BeforeEach
 	void setUp() {
 		List<VoteCreateDto> voteCreateDtos = List.of(
-			new VoteCreateDto(null, "테스트1", "TECH", "테스트 설명1", Arrays.asList("1번", "2번"), 2),
-			new VoteCreateDto(null, "테스트2", "CULTURE", "테스트 설명2", Arrays.asList("3번", "4번"), 2),
+			new VoteCreateDto(null, "테스트1", "DEV", "테스트 설명1", Arrays.asList("1번", "2번"), 2),
+			new VoteCreateDto(null, "테스트2", "FRIEND", "테스트 설명2", Arrays.asList("3번", "4번"), 2),
 			new VoteCreateDto(null, "테스트3", "DAILY", "테스트 설명3", Arrays.asList("5번", "6번"), 2)
 		);
 
@@ -75,7 +76,7 @@ class VoteControllerTest {
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
 			null,
 			"테스트입니다.",
-			"TECH",
+			"DEV",
 			"테스트입니다",
 			Arrays.asList("1번", "2번"),
 			2);
@@ -105,19 +106,20 @@ class VoteControllerTest {
 	void read_voteSuccess() throws Exception {
 		// Given
 		Vote savedVote = voteRepository.findAll().get(0);
+		VoteOptionWithCountDto voteOptionWithCountDto = new VoteOptionWithCountDto(savedVote.getId(),
+			savedVote.getTitle(), 0);
 
 		// When & Then
 		this.mockMvc.perform(get("/api/v1/votes/{id}", savedVote.getId())
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.title").value("테스트1"))
-			.andExpect(jsonPath("$.category").value("기술"))
+			.andExpect(jsonPath("$.category").value("개발"))
 			.andExpect(jsonPath("$.createAt").exists())
 			.andExpect(jsonPath("$.description").value("테스트 설명1"))
 			.andExpect(jsonPath("$.totalVoteCount").value(0))
-			.andExpect(jsonPath("$.voteOptionsWithCount.['1번']").value(0))
-			.andExpect(jsonPath("$.voteOptionsWithCount.['2번']").value(0))
-			.andExpect(jsonPath("$.totalVoteCount").value(0));
+			.andExpect(jsonPath("$.voteOptionWithCounts[0].count").exists())
+			.andExpect(jsonPath("$.voteOptionWithCounts[0].title").value("1번"));
 	}
 
 	@Test
@@ -127,7 +129,7 @@ class VoteControllerTest {
 		this.mockMvc.perform(get("/api/v1/votes")
 				.param("page", "0")
 				.param("size", "3")
-				.param("category", "TECH")
+				.param("category", "DEV")
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content").exists())
