@@ -146,6 +146,6 @@ public class VoteService {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
 		return uuidRepository.findById(Uuid.fromString(uuid))
-			.orElseGet(() -> uuidRepository.save(Uuid.create(Uuid.fromString(uuid))));
+			.orElseGet(() -> uuidRepository.save(Uuid.create(UUID.randomUUID())));
 	}
 }

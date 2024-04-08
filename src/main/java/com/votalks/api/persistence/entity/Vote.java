@@ -40,7 +40,7 @@ public class Vote {
 	@Column(name = "title", length = 100, nullable = false)
 	private String title;
 
-	@Column(name = "description", length = 200)
+	@Column(name = "description", length = 300)
 	private String description;
 
 	@CreatedDate

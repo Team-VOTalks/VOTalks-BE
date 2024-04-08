@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Category {
-	CULTURE("문화"),
-	TECH("기술"),
-	DAILY("일상");
-
+	DEV("개발"),
+	DATE("연애"),
+	DAILY("일상"),
+	COMPANY("회사"),
+	FRIEND("친구"),
+	FAMILY("가족");
 	private final String name;
 
 	public static boolean contains(String category) {
