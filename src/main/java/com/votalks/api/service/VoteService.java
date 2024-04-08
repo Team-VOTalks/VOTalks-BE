@@ -132,7 +132,7 @@ public class VoteService {
 	}
 
 	private Uuid getOrCreate(String uuid) {
-		if (uuid == null) {
+		if (uuid == null || uuid.length() != 32) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
 		return uuidRepository.findById(Uuid.fromString(uuid))

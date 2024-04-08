@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "vote_option")
+@Table(name = "tbl_vote_option")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class VoteOption {
 	@Id

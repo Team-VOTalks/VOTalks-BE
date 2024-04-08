@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "vote")
+@Table(name = "tbl_vote")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Vote {
