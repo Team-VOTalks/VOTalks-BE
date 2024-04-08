@@ -1,18 +1,19 @@
 package com.votalks.api.dto.vote;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
 import lombok.Builder;
 
 @Builder
 public record VoteReadDto(
+	Long voteId,
 	String title,
 	String category,
 	LocalDateTime createAt,
 	int totalVoteCount,
 	String description,
-	Map<String, Integer> voteOptionsWithCount,
+	List<VoteOptionWithCountDto> voteOptionWithCounts,
 	int totalCommentCount
 ) {
 }

@@ -3,10 +3,8 @@ package com.votalks.api.service;
 import static java.util.function.Predicate.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.dto.vote.VoteOptionWithCountDto;
 import com.votalks.api.dto.vote.VoteReadDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.persistence.entity.Category;
@@ -47,7 +46,8 @@ public class VoteService {
 	public void create(VoteCreateDto dto) {
 		final Uuid uuid = getOrCreate(dto.uuid());
 		final Vote vote = Vote.create(dto, uuid);
-		final List<VoteOption> voteOptions = dto.voteOptions().stream()
+		final List<VoteOption> voteOptions = dto.voteOptions()
+			.stream()
 			.map(optionValue -> VoteOption.create(optionValue, vote))
 			.toList();
 
@@ -77,20 +77,18 @@ public class VoteService {
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 
-		Map<String, Integer> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
+		final List<VoteOptionWithCountDto> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
 			.stream()
-			.collect(Collectors.toMap(
-				VoteOption::getContent,
-				VoteOption::getVoteCount
-			));
+			.map(voteOption -> new VoteOptionWithCountDto(voteOption.getId(), voteOption.getContent(),
+				voteOption.getVoteCount()))
+			.toList();
 
-		int totalVoteCount = voteOptionsWithCounts
-			.values()
-			.stream()
+		final int totalVoteCount = voteOptionsWithCounts.stream()
+			.map(VoteOptionWithCountDto::count)
 			.mapToInt(Integer::intValue)
 			.sum();
 
-		int totalCommentCount = commentRepository.countByVote(vote);
+		final int totalCommentCount = commentRepository.countByVote(vote);
 
 		return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 	}
@@ -101,15 +99,18 @@ public class VoteService {
 		Page<Vote> votes = getPagedVotesFilteredByCategory(category, pageable);
 
 		return votes.map(vote -> {
-			Map<String, Integer> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
+			final List<VoteOptionWithCountDto> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
 				.stream()
-				.collect(Collectors.toMap(
-					VoteOption::getContent,
-					VoteOption::getVoteCount
-				));
+				.map(voteOption -> new VoteOptionWithCountDto(voteOption.getId(), voteOption.getContent(),
+					voteOption.getVoteCount()))
+				.toList();
 
-			int totalVoteCount = voteOptionsWithCounts.values().stream().mapToInt(Integer::intValue).sum();
-			int totalCommentCount = commentRepository.countByVote(vote);
+			final int totalVoteCount = voteOptionsWithCounts.stream()
+				.map(VoteOptionWithCountDto::count)
+				.mapToInt(Integer::intValue)
+				.sum();
+
+			final int totalCommentCount = commentRepository.countByVote(vote);
 
 			return Vote.read(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 		});
