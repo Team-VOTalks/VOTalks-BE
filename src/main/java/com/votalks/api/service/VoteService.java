@@ -1,5 +1,6 @@
 package com.votalks.api.service;
 
+import static com.votalks.global.common.util.GlobalConstant.*;
 import static java.util.function.Predicate.*;
 
 import java.util.List;
@@ -133,7 +134,7 @@ public class VoteService {
 	}
 
 	private Uuid getOrCreate(String uuid) {
-		if (StringUtils.isEmpty(uuid) || uuid.length() != 32) {
+		if (StringUtils.isEmpty(uuid) || uuid.length() != UUID_LENGTH_STANDARD) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
 		return uuidRepository.findById(Uuid.fromString(uuid))

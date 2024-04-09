@@ -1,5 +1,7 @@
 package com.votalks.api.service;
 
+import static com.votalks.global.common.util.GlobalConstant.*;
+
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,16 +60,16 @@ public class CommentService {
 
 	private int determineUserNumber(Vote vote, Uuid uuid) {
 		if (vote.getUuid().equals(uuid)) {
-			return 0;
+			return AUTHOR;
 		}
 		if (commentRepository.existsByVoteAndUuid(vote, uuid)) {
 			return commentRepository.findUserNumberByUuid(uuid);
 		}
-		return commentRepository.findMaxUserNumberByVote(vote).orElse(0) + 1;
+		return commentRepository.findMaxUserNumberByVote(vote).orElse(INITIAL_NUMBER) + NEXT_COMMENTER;
 	}
 
 	private Uuid getOrCreate(String uuid) {
-		if (StringUtils.isEmpty(uuid) || uuid.length() != 32) {
+		if (StringUtils.isEmpty(uuid) || uuid.length() != UUID_LENGTH_STANDARD) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
 		return uuidRepository.findById(Uuid.fromString(uuid))

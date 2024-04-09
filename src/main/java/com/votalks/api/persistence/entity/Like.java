@@ -1,5 +1,7 @@
 package com.votalks.api.persistence.entity;
 
+import static com.votalks.global.common.util.GlobalConstant.*;
+
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Column;
@@ -36,6 +38,6 @@ public class Like {
 	}
 
 	public static Like create() {
-		return new Like(0, 0);
+		return new Like(INITIAL_NUMBER, INITIAL_NUMBER);
 	}
 }
