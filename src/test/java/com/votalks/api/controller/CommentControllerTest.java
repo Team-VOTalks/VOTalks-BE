@@ -20,9 +20,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.votalks.api.dto.comment.CommentCreateDto;
 import com.votalks.api.dto.vote.VoteCreateDto;
+import com.votalks.api.persistence.entity.Comment;
+import com.votalks.api.persistence.entity.Like;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.entity.VoteOption;
 import com.votalks.api.persistence.repository.CommentRepository;
+import com.votalks.api.persistence.repository.LikeRepository;
 import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.UuidVoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteOptionRepository;
@@ -53,12 +56,21 @@ class CommentControllerTest {
 	@Autowired
 	CommentRepository commentRepository;
 
+	@Autowired
+	LikeRepository likeRepository;
+
 	@MockBean
 	CommentService commentService;
 
 	@BeforeEach
 	void setUp() {
-		VoteCreateDto voteCreateDto = new VoteCreateDto(null, "테스트입니다.", "DEV", "테스트입니다", Arrays.asList("1번", "2번"), 2);
+		VoteCreateDto voteCreateDto = new VoteCreateDto(
+			null,
+			"테스트입니다.",
+			"DEV",
+			"테스트입니다",
+			Arrays.asList("1번", "2번"),
+			2);
 
 		Vote vote = Vote.create(voteCreateDto, null);
 		vote = voteRepository.save(vote);
@@ -70,6 +82,21 @@ class CommentControllerTest {
 			.collect(Collectors.toList());
 
 		voteOptionRepository.saveAll(voteOptions);
+
+		CommentCreateDto commentCreateDto = new CommentCreateDto(
+			"안녕",
+			"null"
+		);
+		Like like = Like.create();
+		Comment comment = Comment.create(
+			commentCreateDto,
+			null,
+			vote,
+			like,
+			0
+		);
+		likeRepository.save(like);
+		commentRepository.save(comment);
 	}
 
 	@Test
@@ -81,4 +108,14 @@ class CommentControllerTest {
 		this.mockMvc.perform(post("/api/v1/comments/" + 1L).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(commentCreateDto))).andExpect(status().isOk());
 	}
+
+	@Test
+	@DisplayName("페이징된 댓글 조회 성공")
+	void readPagedComments_success() throws Exception {
+
+		mockMvc.perform(get("/api/v1/comments/" + 1L)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+	}
 }
+
