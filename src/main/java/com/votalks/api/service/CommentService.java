@@ -10,29 +10,35 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.votalks.api.dto.comment.CommentCreateDto;
 import com.votalks.api.dto.comment.CommentReadDto;
 import com.votalks.api.persistence.entity.Comment;
 import com.votalks.api.persistence.entity.Like;
 import com.votalks.api.persistence.entity.Uuid;
+import com.votalks.api.persistence.entity.UuidLike;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.repository.CommentRepository;
 import com.votalks.api.persistence.repository.LikeRepository;
+import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
+import com.votalks.global.error.exception.BadRequestException;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CommentService {
 	private final CommentRepository commentRepository;
 	private final VoteRepository voteRepository;
 	private final UuidRepository uuidRepository;
 	private final LikeRepository likeRepository;
+	private final UuidLikeRepository uuidLikeRepository;
 
 	public void create(CommentCreateDto dto, Long id) {
 		final Vote vote = voteRepository.findById(id)
@@ -56,6 +62,40 @@ public class CommentService {
 					comment.getLike().getDislikeCount(),
 					comment.getReply().size()
 				));
+	}
+
+	public void like(Long voteId, Long commentId, String userUuid) {
+		final Vote vote = voteRepository.findById(voteId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+		final Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
+		validateBelongToVote(comment, vote);
+		final Uuid uuid = getOrCreate(userUuid);
+		final Like like = comment.getLike();
+
+		if (isAlreadyPress(uuid, like)) {
+			cancelLike(uuid, like);
+			return;
+		}
+
+		final UuidLike uuidLike = UuidLike.create(uuid, like);
+		like.pressLike();
+		uuidLikeRepository.save(uuidLike);
+	}
+
+	private boolean isAlreadyPress(Uuid uuid, Like like) {
+		return uuidLikeRepository.existsByUuidAndLike(uuid, like);
+	}
+
+	private void cancelLike(Uuid uuid, Like like) {
+		like.cancelLike();
+		uuidLikeRepository.deleteByUuidAndLike(uuid, like);
+	}
+
+	private static void validateBelongToVote(Comment comment, Vote vote) {
+		if (!comment.getVote().equals(vote)) {
+			throw new BadRequestException(ErrorCode.BAD_REQUEST);
+		}
 	}
 
 	private int determineUserNumber(Vote vote, Uuid uuid) {

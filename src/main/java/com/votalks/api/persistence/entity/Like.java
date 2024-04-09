@@ -37,6 +37,14 @@ public class Like {
 		this.dislikeCount = dislikeCount;
 	}
 
+	public void pressLike() {
+		this.likeCount++;
+	}
+
+	public void cancelLike() {
+		this.likeCount--;
+	}
+
 	public static Like create() {
 		return new Like(INITIAL_NUMBER, INITIAL_NUMBER);
 	}

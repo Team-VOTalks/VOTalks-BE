@@ -30,4 +30,13 @@ public class UuidLike {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "like_id")
 	private Like like;
+
+	private UuidLike(Uuid uuid, Like like) {
+		this.uuid = uuid;
+		this.like = like;
+	}
+
+	public static UuidLike create(Uuid uuid, Like like) {
+		return new UuidLike(uuid, like);
+	}
 }
