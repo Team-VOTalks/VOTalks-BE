@@ -67,7 +67,6 @@ public class Comment {
 	private Comment(
 		String content,
 		int userNumber,
-		LocalDateTime createdAt,
 		Vote vote,
 		Uuid uuid,
 		Comment comment,
@@ -75,7 +74,6 @@ public class Comment {
 	) {
 		this.content = content;
 		this.userNumber = userNumber;
-		this.createdAt = createdAt;
 		this.vote = vote;
 		this.uuid = uuid;
 		this.comment = comment;

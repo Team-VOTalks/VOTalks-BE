@@ -63,14 +63,12 @@ public class Vote {
 	private Vote(
 		String title,
 		String description,
-		LocalDateTime createdAt,
 		int selectCount,
 		Category category,
 		Uuid uuid
 	) {
 		this.title = title;
 		this.description = description;
-		this.createdAt = createdAt;
 		this.selectCount = selectCount;
 		this.category = category;
 		this.uuid = uuid;

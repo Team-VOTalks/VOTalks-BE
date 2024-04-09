@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -132,7 +133,7 @@ public class VoteService {
 	}
 
 	private Uuid getOrCreate(String uuid) {
-		if (uuid == null || uuid.length() != 32) {
+		if (StringUtils.isEmpty(uuid) || uuid.length() != 32) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
 		return uuidRepository.findById(Uuid.fromString(uuid))
