@@ -84,7 +84,7 @@ public class VoteService {
 	@Transactional(readOnly = true)
 	public Page<VoteReadDto> readAll(int page, int size, String category) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		Page<Vote> votes = getPagedVotesFilteredByCategory(category, pageable);
+		Page<Vote> votes = getPagedVotesByCategory(category, pageable);
 
 		return votes.map(this::getReadDto);
 	}
@@ -106,7 +106,7 @@ public class VoteService {
 		return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 	}
 
-	private Page<Vote> getPagedVotesFilteredByCategory(String category, Pageable pageable) {
+	private Page<Vote> getPagedVotesByCategory(String category, Pageable pageable) {
 		return Optional.ofNullable(category)
 			.filter(not(String::isBlank))
 			.filter(Category::contains)
