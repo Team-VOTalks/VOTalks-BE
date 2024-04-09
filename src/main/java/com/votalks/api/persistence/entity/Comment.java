@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.votalks.api.dto.comment.CommentCreateDto;
+import com.votalks.api.dto.comment.CommentReadDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +21,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -60,6 +62,10 @@ public class Comment {
 	@JoinColumn(name = "comment_id")
 	private Comment comment;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "like_id")
+	private Like like;
+
 	@OneToMany(mappedBy = "comment", orphanRemoval = true)
 	private List<Comment> reply = new ArrayList<>();
 
@@ -69,6 +75,7 @@ public class Comment {
 		int userNumber,
 		Vote vote,
 		Uuid uuid,
+		Like like,
 		Comment comment,
 		List<Comment> reply
 	) {
@@ -76,6 +83,7 @@ public class Comment {
 		this.userNumber = userNumber;
 		this.vote = vote;
 		this.uuid = uuid;
+		this.like = like;
 		this.comment = comment;
 		this.reply = reply;
 	}
@@ -84,13 +92,31 @@ public class Comment {
 		CommentCreateDto dto,
 		Uuid uuid,
 		Vote vote,
+		Like like,
 		int userNumber
 	) {
 		return Comment.builder()
 			.content(dto.content())
 			.uuid(uuid)
+			.like(like)
 			.userNumber(userNumber)
 			.vote(vote)
+			.build();
+	}
+
+	public static CommentReadDto toCommentReadDto(
+		Comment comment,
+		int likeCount,
+		int dislikeCount,
+		int totalReplyCount
+	) {
+		return CommentReadDto.builder()
+			.userNumber(comment.getUserNumber())
+			.content(comment.getContent())
+			.likeCount(likeCount)
+			.createAt(comment.getCreatedAt())
+			.dislikeCount(dislikeCount)
+			.totalReplyCount(totalReplyCount)
 			.build();
 	}
 }
