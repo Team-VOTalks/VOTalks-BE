@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "comment")
+@Table(name = "tbl_like")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Like {
 	@Id

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "uuid")
+@Table(name = "tbl_uuid")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Uuid {
 	@Id
