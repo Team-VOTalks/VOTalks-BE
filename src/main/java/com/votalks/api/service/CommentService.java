@@ -54,14 +54,9 @@ public class CommentService {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+
 		return commentRepository.findAllByVote(vote, pageable)
-			.map(
-				comment -> Comment.toCommentReadDto(
-					comment,
-					comment.getLike().getLikeCount(),
-					comment.getLike().getDislikeCount(),
-					comment.getReply().size()
-				));
+			.map(Comment::toCommentReadDto);
 	}
 
 	public void like(Long voteId, Long commentId, String userUuid) {
