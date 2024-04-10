@@ -9,4 +9,6 @@ public class GlobalConstant {
 	public static final int AUTHOR = 0;
 	public static final int INITIAL_NUMBER = 0;
 	public static final int NEXT_COMMENTER = 1;
+	public static final String LIKE = "LIKE";
+	public static final String DISLIKE = "DISLIKE";
 }
