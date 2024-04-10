@@ -1,5 +1,6 @@
 package com.votalks.api.service;
 
+import static com.votalks.global.common.util.GlobalConstant.*;
 import static java.util.function.Predicate.*;
 
 import java.util.List;
@@ -84,7 +85,7 @@ public class VoteService {
 	@Transactional(readOnly = true)
 	public Page<VoteReadDto> readAll(int page, int size, String category) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		Page<Vote> votes = getPagedVotesFilteredByCategory(category, pageable);
+		Page<Vote> votes = getPagedVotesByCategory(category, pageable);
 
 		return votes.map(this::getReadDto);
 	}
@@ -106,7 +107,7 @@ public class VoteService {
 		return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 	}
 
-	private Page<Vote> getPagedVotesFilteredByCategory(String category, Pageable pageable) {
+	private Page<Vote> getPagedVotesByCategory(String category, Pageable pageable) {
 		return Optional.ofNullable(category)
 			.filter(not(String::isBlank))
 			.filter(Category::contains)
@@ -133,7 +134,7 @@ public class VoteService {
 	}
 
 	private Uuid getOrCreate(String uuid) {
-		if (StringUtils.isEmpty(uuid) || uuid.length() != 32) {
+		if (StringUtils.isEmpty(uuid) || uuid.length() != UUID_LENGTH_STANDARD) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
 		return uuidRepository.findById(Uuid.fromString(uuid))

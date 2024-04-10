@@ -1,5 +1,9 @@
 package com.votalks.api.persistence.entity;
 
+import static com.votalks.global.common.util.GlobalConstant.*;
+
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,8 +25,19 @@ public class Like {
 	private Long id;
 
 	@Column(name = "like_count", nullable = false)
+	@ColumnDefault("0")
 	private int likeCount;
 
 	@Column(name = "dislike_count", nullable = false)
+	@ColumnDefault("0")
 	private int dislikeCount;
+
+	private Like(int likeCount, int dislikeCount) {
+		this.likeCount = likeCount;
+		this.dislikeCount = dislikeCount;
+	}
+
+	public static Like create() {
+		return new Like(INITIAL_NUMBER, INITIAL_NUMBER);
+	}
 }
