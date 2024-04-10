@@ -2,6 +2,8 @@ package com.votalks.api.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,12 +33,25 @@ public class UuidLike {
 	@JoinColumn(name = "like_id")
 	private Like like;
 
-	private UuidLike(Uuid uuid, Like like) {
+	@Enumerated(EnumType.STRING)
+	@Column(name = "like_type", nullable = false)
+	private LikeType likeType;
+
+	private UuidLike(Uuid uuid, Like like, LikeType likeType) {
 		this.uuid = uuid;
 		this.like = like;
+		this.likeType = likeType;
 	}
 
 	public static UuidLike create(Uuid uuid, Like like) {
-		return new UuidLike(uuid, like);
+		return new UuidLike(uuid, like, LikeType.CREATE);
+	}
+
+	public void likeType() {
+		this.likeType = LikeType.LIKE;
+	}
+
+	public void dislikeType() {
+		this.likeType = LikeType.DISLIKE;
 	}
 }
