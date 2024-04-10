@@ -102,9 +102,11 @@ public class CommentService {
 		if (vote.getUuid().equals(uuid)) {
 			return AUTHOR;
 		}
+
 		if (commentRepository.existsByVoteAndUuid(vote, uuid)) {
 			return commentRepository.findUserNumberByUuid(uuid);
 		}
+
 		return commentRepository.findMaxUserNumberByVote(vote).orElse(INITIAL_NUMBER) + NEXT_COMMENTER;
 	}
 
