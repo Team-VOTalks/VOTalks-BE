@@ -90,7 +90,7 @@ class VoteControllerTest {
 	@DisplayName("POST - 성공적으로 투표한다 - void")
 	void select_success() throws Exception {
 		// Given
-		VoteTakeDto voteTakeDto = new VoteTakeDto(1L, null);
+		VoteTakeDto voteTakeDto = new VoteTakeDto(1L);
 
 		// When & Then
 		this.mockMvc.perform(post("/api/v1/votes/" + 1L)
