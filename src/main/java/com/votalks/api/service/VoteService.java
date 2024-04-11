@@ -104,7 +104,7 @@ public class VoteService {
 
 		final int totalCommentCount = commentRepository.countByVote(vote);
 
-		return Vote.toVoteReadDto(vote, totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+		return vote.toVoteReadDto(totalVoteCount, voteOptionsWithCounts, totalCommentCount);
 	}
 
 	private Page<Vote> getPagedVotesByCategory(String category, Pageable pageable) {
@@ -137,7 +137,7 @@ public class VoteService {
 		if (StringUtils.isEmpty(uuid) || uuid.length() != UUID_LENGTH_STANDARD) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
-		
+
 		return uuidRepository.findById(Uuid.fromString(uuid))
 			.orElseGet(() -> uuidRepository.save(Uuid.create(UUID.randomUUID())));
 	}

@@ -51,9 +51,9 @@ class VoteControllerTest {
 	@BeforeEach
 	void setUp() {
 		List<VoteCreateDto> voteCreateDtos = List.of(
-			new VoteCreateDto(null, "테스트1", "DEV", "테스트 설명1", Arrays.asList("1번", "2번"), 2),
-			new VoteCreateDto(null, "테스트2", "FRIEND", "테스트 설명2", Arrays.asList("3번", "4번"), 2),
-			new VoteCreateDto(null, "테스트3", "DAILY", "테스트 설명3", Arrays.asList("5번", "6번"), 2)
+			new VoteCreateDto(null, "테스트1", "dev", "테스트 설명1", Arrays.asList("1번", "2번"), 2),
+			new VoteCreateDto(null, "테스트2", "friend", "테스트 설명2", Arrays.asList("3번", "4번"), 2),
+			new VoteCreateDto(null, "테스트3", "daily", "테스트 설명3", Arrays.asList("5번", "6번"), 2)
 		);
 
 		for (VoteCreateDto voteCreateDto : voteCreateDtos) {
@@ -76,7 +76,7 @@ class VoteControllerTest {
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
 			null,
 			"테스트입니다.",
-			"DEV",
+			"dev",
 			"테스트입니다",
 			Arrays.asList("1번", "2번"),
 			2);
@@ -129,7 +129,7 @@ class VoteControllerTest {
 		this.mockMvc.perform(get("/api/v1/votes")
 				.param("page", "0")
 				.param("size", "3")
-				.param("category", "DEV")
+				.param("category", "dev")
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content").exists())

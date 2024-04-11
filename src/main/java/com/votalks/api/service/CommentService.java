@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votalks.api.dto.comment.CommentCreateDto;
+import com.votalks.api.dto.comment.CommentLikeDto;
 import com.votalks.api.dto.comment.CommentReadDto;
 import com.votalks.api.persistence.entity.Comment;
 import com.votalks.api.persistence.entity.Like;
+import com.votalks.api.persistence.entity.LikeType;
 import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidLike;
 import com.votalks.api.persistence.entity.Vote;
@@ -24,7 +26,6 @@ import com.votalks.api.persistence.repository.LikeRepository;
 import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
-import com.votalks.global.error.exception.BadRequestException;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
@@ -46,12 +47,14 @@ public class CommentService {
 		final Uuid uuid = getOrCreate(dto.uuid());
 		final int userNumber = determineUserNumber(vote, uuid);
 		final Like like = Like.create();
+		final Comment comment = Comment.create(dto, uuid, vote, like, userNumber);
+
 		likeRepository.save(like);
-		commentRepository.save(Comment.create(dto, uuid, vote, like, userNumber));
+		commentRepository.save(comment);
 	}
 
 	public Page<CommentReadDto> read(Long id, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 
@@ -59,37 +62,46 @@ public class CommentService {
 			.map(Comment::toCommentReadDto);
 	}
 
-	public void like(Long voteId, Long commentId, String userUuid) {
-		final Vote vote = voteRepository.findById(voteId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
-		final Comment comment = commentRepository.findById(commentId)
+	public void like(Long voteId, Long commentId, CommentLikeDto dto) {
+		final Comment comment = commentRepository.findByIdAndVote_Id(commentId, voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
-		validateBelongToVote(comment, vote);
-		final Uuid uuid = getOrCreate(userUuid);
+		final Uuid uuid = getOrCreate(dto.uuid());
 		final Like like = comment.getLike();
+		final LikeType likeType = LikeType.from(dto.likeType());
 
-		if (isAlreadyPress(uuid, like)) {
-			cancelLike(uuid, like);
+		uuidLikeRepository.findByUuidAndLike(uuid, like)
+			.ifPresentOrElse(
+				uuidLike -> validateCancelLike(like, likeType, uuidLike),
+				() -> {
+					UuidLike uuidLike = UuidLike.create(uuid, like, likeType);
+					uuidLikeRepository.save(uuidLike);
+				});
+	}
+
+	private void validateCancelLike(Like like, LikeType likeType, UuidLike uuidLike) {
+		if (likeType.isLike() && uuidLike.getLikeType().isLike()) {
+			like.cancelLike();
+			uuidLikeRepository.delete(uuidLike);
 			return;
 		}
 
-		final UuidLike uuidLike = UuidLike.create(uuid, like);
-		like.pressLike();
-		uuidLikeRepository.save(uuidLike);
-	}
+		if (likeType.isDislike() && uuidLike.getLikeType().isDislike()) {
+			like.cancelDislike();
+			uuidLikeRepository.delete(uuidLike);
+			return;
+		}
 
-	private boolean isAlreadyPress(Uuid uuid, Like like) {
-		return uuidLikeRepository.existsByUuidAndLike(uuid, like);
-	}
+		if (uuidLike.getLikeType().isDislike() && likeType.isLike()) {
+			like.cancelDislike();
+			like.pressLike();
+			uuidLike.likeType();
+			return;
+		}
 
-	private void cancelLike(Uuid uuid, Like like) {
-		like.cancelLike();
-		uuidLikeRepository.deleteByUuidAndLike(uuid, like);
-	}
-
-	private static void validateBelongToVote(Comment comment, Vote vote) {
-		if (!comment.getVote().equals(vote)) {
-			throw new BadRequestException(ErrorCode.BAD_REQUEST);
+		if (uuidLike.getLikeType().isLike() && likeType.isDislike()) {
+			like.cancelLike();
+			like.pressDisLike();
+			uuidLike.dislikeType();
 		}
 	}
 

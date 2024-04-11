@@ -41,8 +41,16 @@ public class Like {
 		this.likeCount++;
 	}
 
+	public void pressDisLike() {
+		this.dislikeCount++;
+	}
+
 	public void cancelLike() {
 		this.likeCount--;
+	}
+
+	public void cancelDislike() {
+		this.dislikeCount--;
 	}
 
 	public static Like create() {

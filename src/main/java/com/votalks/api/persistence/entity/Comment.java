@@ -62,7 +62,7 @@ public class Comment {
 	@JoinColumn(name = "comment_id")
 	private Comment comment;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
 	@JoinColumn(name = "like_id")
 	private Like like;
 
@@ -104,9 +104,7 @@ public class Comment {
 			.build();
 	}
 
-	public static CommentReadDto toCommentReadDto(
-		Comment comment
-	) {
+	public static CommentReadDto toCommentReadDto(Comment comment) {
 		return CommentReadDto.builder()
 			.userNumber(comment.getUserNumber())
 			.content(comment.getContent())

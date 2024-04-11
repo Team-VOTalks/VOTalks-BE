@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.votalks.api.dto.comment.CommentCreateDto;
+import com.votalks.api.dto.comment.CommentLikeDto;
 import com.votalks.api.dto.comment.CommentReadDto;
 import com.votalks.api.service.CommentService;
 
@@ -27,13 +28,13 @@ public class CommentController {
 		commentService.create(dto, id);
 	}
 
-	@PostMapping("/comment/{commentId}/like")
+	@PostMapping("/comment/{comment-id}/like")
 	public void like(
 		@PathVariable Long id,
-		@PathVariable Long commentId,
-		@RequestBody String uuid
+		@PathVariable(name = "comment-id") Long commentId,
+		@RequestBody CommentLikeDto dto
 	) {
-		commentService.like(id, commentId, uuid);
+		commentService.like(id, commentId, dto);
 	}
 
 	@GetMapping

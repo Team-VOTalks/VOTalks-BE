@@ -12,19 +12,27 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Category {
-	DEV("개발"),
-	DATE("연애"),
-	DAILY("일상"),
-	COMPANY("회사"),
-	FRIEND("친구"),
-	FAMILY("가족");
+	DEV("개발", "dev"),
+	DATE("연애", "date"),
+	DAILY("일상", "daily"),
+	COMPANY("회사", "company"),
+	FRIEND("친구", "friend"),
+	FAMILY("가족", "family");
 	private final String name;
+	private final String value;
 
 	private static final Map<String, Category> names =
 		Collections.unmodifiableMap(Stream.of(values())
 			.collect(Collectors.toMap(Category::getName, Function.identity())));
 
+	private static final Map<String, Category> valuesMap = Collections.unmodifiableMap(Stream.of(values())
+		.collect(Collectors.toMap(Category::getValue, Function.identity())));
+
 	public static boolean contains(String category) {
 		return names.containsKey(category);
+	}
+
+	public static Category fromValue(String value) {
+		return valuesMap.get(value);
 	}
 }
