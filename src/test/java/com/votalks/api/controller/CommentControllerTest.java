@@ -67,7 +67,7 @@ class CommentControllerTest {
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
 			null,
 			"테스트입니다.",
-			"DEV",
+			"dev",
 			"테스트입니다",
 			Arrays.asList("1번", "2번"),
 			2);
