@@ -43,8 +43,16 @@ public class UuidLike {
 		this.likeType = likeType;
 	}
 
-	public static UuidLike create(Uuid uuid, Like like) {
-		return new UuidLike(uuid, like, LikeType.CREATE);
+	public static UuidLike create(Uuid uuid, Like like, LikeType likeType) {
+		if (likeType.isLike()) {
+			like.pressLike();
+		}
+
+		if (likeType.isDislike()) {
+			like.pressDisLike();
+		}
+
+		return new UuidLike(uuid, like, likeType);
 	}
 
 	public void likeType() {

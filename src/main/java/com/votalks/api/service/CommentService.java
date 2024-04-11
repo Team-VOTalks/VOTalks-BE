@@ -26,7 +26,6 @@ import com.votalks.api.persistence.repository.LikeRepository;
 import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
-import com.votalks.global.error.exception.BadRequestException;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
@@ -48,9 +47,10 @@ public class CommentService {
 		final Uuid uuid = getOrCreate(dto.uuid());
 		final int userNumber = determineUserNumber(vote, uuid);
 		final Like like = Like.create();
+		final Comment comment = Comment.create(dto, uuid, vote, like, userNumber);
 
 		likeRepository.save(like);
-		commentRepository.save(Comment.create(dto, uuid, vote, like, userNumber));
+		commentRepository.save(comment);
 	}
 
 	public Page<CommentReadDto> read(Long id, int page, int size) {
@@ -63,78 +63,45 @@ public class CommentService {
 	}
 
 	public void like(Long voteId, Long commentId, CommentLikeDto dto) {
-		final Vote vote = voteRepository.findById(voteId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
-		final Comment comment = commentRepository.findById(commentId)
+		final Comment comment = commentRepository.findByIdAndVote_Id(commentId, voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
-		validateBelongToVote(comment, vote);
 		final Uuid uuid = getOrCreate(dto.uuid());
 		final Like like = comment.getLike();
-		final UuidLike uuidLike = uuidLikeRepository.findByUuidAndLike(uuid, like)
-			.orElse(UuidLike.create(uuid, like));
+		final LikeType likeType = LikeType.from(dto.likeType());
 
-		if (isAlreadyPress(uuid, like)) {
-			validateCancelLike(like, dto.likeType(), uuidLike);
-			validateChangeLike(like, dto.likeType(), uuidLike);
+		uuidLikeRepository.findByUuidAndLike(uuid, like)
+			.ifPresentOrElse(
+				uuidLike -> validateCancelLike(like, likeType, uuidLike),
+				() -> {
+					UuidLike uuidLike = UuidLike.create(uuid, like, likeType);
+					uuidLikeRepository.save(uuidLike);
+				});
+	}
+
+	private void validateCancelLike(Like like, LikeType likeType, UuidLike uuidLike) {
+		if (likeType.isLike() && uuidLike.getLikeType().isLike()) {
+			like.cancelLike();
+			uuidLikeRepository.delete(uuidLike);
 			return;
 		}
 
-		validatePressLike(dto, like, uuidLike);
-		validatePressDislike(dto, like, uuidLike);
-		uuidLikeRepository.save(uuidLike);
-	}
-
-	private void validatePressDislike(CommentLikeDto dto, Like like, UuidLike uuidLike) {
-		if (dto.likeType().equals(DISLIKE)) {
-			like.pressDisLike();
-			uuidLike.dislikeType();
-		}
-	}
-
-	private void validatePressLike(CommentLikeDto dto, Like like, UuidLike uuidLike) {
-		if (dto.likeType().equals(LIKE)) {
-			like.pressLike();
-			uuidLike.likeType();
-		}
-	}
-
-	private boolean isAlreadyPress(Uuid uuid, Like like) {
-		return uuidLikeRepository.existsByUuidAndLike(uuid, like);
-	}
-
-	private void validateCancelLike(Like like, String likeType, UuidLike uuidLike) {
-		if (likeType.equals(LIKE) && uuidLike.getLikeType().equals(LikeType.LIKE)) {
-			like.cancelLike();
-			uuidLikeRepository.delete(uuidLike);
-		}
-		
-		if (likeType.equals(DISLIKE) && uuidLike.getLikeType().equals(LikeType.DISLIKE)) {
+		if (likeType.isDislike() && uuidLike.getLikeType().isDislike()) {
 			like.cancelDislike();
 			uuidLikeRepository.delete(uuidLike);
+			return;
 		}
-	}
 
-	/**
-	 * 이미 싫어요를 눌렀는데, 좋아요를 누르는 경우
-	 * 이미 좋아요를 눌렀는데, 싫어요를 누르는 경우
-	 */
-	private void validateChangeLike(Like like, String likeType, UuidLike uuidLike) {
-		if (uuidLike.getLikeType().equals(LikeType.DISLIKE) && likeType.equals(LIKE)) {
+		if (uuidLike.getLikeType().isDislike() && likeType.isLike()) {
 			like.cancelDislike();
 			like.pressLike();
 			uuidLike.likeType();
+			return;
 		}
 
-		if (uuidLike.getLikeType().equals(LikeType.LIKE) && likeType.equals(DISLIKE)) {
+		if (uuidLike.getLikeType().isLike() && likeType.isDislike()) {
 			like.cancelLike();
 			like.pressDisLike();
 			uuidLike.dislikeType();
-		}
-	}
-
-	private static void validateBelongToVote(Comment comment, Vote vote) {
-		if (!comment.getVote().equals(vote)) {
-			throw new BadRequestException(ErrorCode.BAD_REQUEST);
 		}
 	}
 

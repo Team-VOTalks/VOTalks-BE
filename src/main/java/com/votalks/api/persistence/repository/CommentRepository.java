@@ -24,4 +24,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 	Optional<Integer> findMaxUserNumberByVote(@Param("vote") Vote vote);
 
 	Page<Comment> findAllByVote(Vote vote, Pageable pageable);
+
+	Optional<Comment> findByIdAndVote_Id(Long commentId, Long voteId);
 }

@@ -79,24 +79,23 @@ public class Vote {
 			.title(dto.title())
 			.description(dto.description())
 			.selectCount(dto.selectCount())
-			.category(Category.valueOf(dto.category()))
+			.category(Category.fromValue(dto.category()))
 			.uuid(uuid)
 			.build();
 	}
 
-	public static VoteReadDto toVoteReadDto(
-		Vote vote,
+	public VoteReadDto toVoteReadDto(
 		int totalVoteCount,
 		List<VoteOptionWithCountDto> voteOptionWithCounts,
 		int totalCommentCount
 	) {
 		return VoteReadDto.builder()
-			.voteId(vote.id)
-			.title(vote.title)
-			.category(vote.category.getName())
-			.createAt(vote.createdAt)
+			.voteId(this.id)
+			.title(this.title)
+			.category(this.category.getName())
+			.createAt(this.createdAt)
 			.totalVoteCount(totalVoteCount)
-			.description(vote.description)
+			.description(this.description)
 			.voteOptionWithCounts(voteOptionWithCounts)
 			.totalCommentCount(totalCommentCount)
 			.build();
