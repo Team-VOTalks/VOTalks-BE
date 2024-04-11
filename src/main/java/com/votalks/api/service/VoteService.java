@@ -1,13 +1,10 @@
 package com.votalks.api.service;
 
-import static com.votalks.global.common.util.GlobalConstant.*;
 import static java.util.function.Predicate.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +22,6 @@ import com.votalks.api.persistence.entity.UuidVoteOption;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.entity.VoteOption;
 import com.votalks.api.persistence.repository.CommentRepository;
-import com.votalks.api.persistence.repository.UuidRepository;
 import com.votalks.api.persistence.repository.UuidVoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
@@ -42,11 +38,11 @@ public class VoteService {
 	private final VoteRepository voteRepository;
 	private final VoteOptionRepository voteOptionRepository;
 	private final UuidVoteOptionRepository uuidVoteOptionRepository;
-	private final UuidRepository uuidRepository;
 	private final CommentRepository commentRepository;
+	private final UuidService uuidService;
 
 	public void create(VoteCreateDto dto) {
-		final Uuid uuid = getOrCreate(dto.uuid());
+		final Uuid uuid = uuidService.getOrCreate(dto.uuid());
 		final Vote vote = Vote.create(dto, uuid);
 		final List<VoteOption> voteOptions = dto.voteOptions()
 			.stream()
@@ -58,7 +54,7 @@ public class VoteService {
 	}
 
 	public void select(VoteTakeDto dto, Long id) {
-		final Uuid uuid = getOrCreate(dto.uuid());
+		final Uuid uuid = uuidService.getOrCreate(dto.uuid());
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 		final VoteOption voteOption = voteOptionRepository.findById(dto.voteOptionId())
@@ -131,14 +127,5 @@ public class VoteService {
 		if (uuidVoteOptionRepository.existsByUuidAndVoteOption(uuid, voteOption)) {
 			throw new BadRequestException(ErrorCode.FAIL_ALREADY_VOTE);
 		}
-	}
-
-	private Uuid getOrCreate(String uuid) {
-		if (StringUtils.isEmpty(uuid) || uuid.length() != UUID_LENGTH_STANDARD) {
-			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
-		}
-
-		return uuidRepository.findById(Uuid.fromString(uuid))
-			.orElseGet(() -> uuidRepository.save(Uuid.create(UUID.randomUUID())));
 	}
 }
