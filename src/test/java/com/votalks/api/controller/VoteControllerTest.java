@@ -51,9 +51,9 @@ class VoteControllerTest {
 	@BeforeEach
 	void setUp() {
 		List<VoteCreateDto> voteCreateDtos = List.of(
-			new VoteCreateDto(null, "테스트1", "dev", "테스트 설명1", Arrays.asList("1번", "2번")),
-			new VoteCreateDto(null, "테스트2", "friend", "테스트 설명2", Arrays.asList("3번", "4번")),
-			new VoteCreateDto(null, "테스트3", "daily", "테스트 설명3", Arrays.asList("5번", "6번"))
+			new VoteCreateDto("테스트1", "dev", "테스트 설명1", Arrays.asList("1번", "2번")),
+			new VoteCreateDto("테스트2", "friend", "테스트 설명2", Arrays.asList("3번", "4번")),
+			new VoteCreateDto("테스트3", "daily", "테스트 설명3", Arrays.asList("5번", "6번"))
 		);
 
 		for (VoteCreateDto voteCreateDto : voteCreateDtos) {
@@ -74,7 +74,6 @@ class VoteControllerTest {
 	void create_vote_success() throws Exception {
 		// Given
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
-			null,
 			"테스트입니다.",
 			"dev",
 			"테스트입니다",
