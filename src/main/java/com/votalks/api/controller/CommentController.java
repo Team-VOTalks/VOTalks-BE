@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class CommentController {
 	private final CommentService commentService;
 
-	@PostMapping("/votes/{vote-id}/comment")
+	@PostMapping("/votes/{vote-id}/comments")
 	public HttpHeaders create(
 		@RequestBody @Valid CommentCreateDto dto,
 		@PathVariable(name = "vote-id") Long id,
@@ -35,7 +35,7 @@ public class CommentController {
 		return commentService.create(dto, id, request, response);
 	}
 
-	@GetMapping("/votes/{vote-id}/comment")
+	@GetMapping("/votes/{vote-id}/comments")
 	public Page<CommentReadDto> read(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
