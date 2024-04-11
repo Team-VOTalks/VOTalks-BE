@@ -28,10 +28,10 @@ public class CommentController {
 		commentService.create(dto, id);
 	}
 
-	@PostMapping("/comment/{commentId}/like")
+	@PostMapping("/comment/{comment-id}/like")
 	public void like(
 		@PathVariable Long id,
-		@PathVariable Long commentId,
+		@PathVariable(name = "comment-id") Long commentId,
 		@RequestBody CommentLikeDto dto
 	) {
 		commentService.like(id, commentId, dto);
