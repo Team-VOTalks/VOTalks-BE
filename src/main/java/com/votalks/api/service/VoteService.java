@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,8 @@ import com.votalks.global.error.exception.BadRequestException;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -41,8 +44,12 @@ public class VoteService {
 	private final CommentRepository commentRepository;
 	private final UuidService uuidService;
 
-	public void create(VoteCreateDto dto) {
-		final Uuid uuid = uuidService.getOrCreate(dto.uuid());
+	public HttpHeaders create(
+		VoteCreateDto dto,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Vote vote = Vote.create(dto, uuid);
 		final List<VoteOption> voteOptions = dto.voteOptions()
 			.stream()
@@ -51,21 +58,28 @@ public class VoteService {
 
 		voteRepository.save(vote);
 		voteOptionRepository.saveAll(voteOptions);
+
+		return uuidService.getHttpHeaders(uuid);
 	}
 
-	public void select(VoteTakeDto dto, Long id) {
-		final Uuid uuid = uuidService.getOrCreate(dto.uuid());
-		final Vote vote = voteRepository.findById(id)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
-		final VoteOption voteOption = voteOptionRepository.findById(dto.voteOptionId())
+	//필요
+	public HttpHeaders select(
+		VoteTakeDto dto,
+		Long id,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		final Uuid uuid = uuidService.getOrCreate(request, response);
+		final VoteOption voteOption = voteOptionRepository.findByIdAndVote_Id(dto.voteOptionId(), id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_OPTION_FOUND));
 
-		validateBelongToVote(voteOption, vote);
-		validateAlreadyVoted(uuid, voteOption);
+		validateAlreadyVoted(uuid);
 		voteOption.select();
 
 		final UuidVoteOption uuidVoteOption = UuidVoteOption.create(uuid, voteOption);
 		uuidVoteOptionRepository.save(uuidVoteOption);
+
+		return uuidService.getHttpHeaders(uuid);
 	}
 
 	@Transactional(readOnly = true)
@@ -109,13 +123,7 @@ public class VoteService {
 			.orElseGet(() -> voteRepository.findAll(pageable));
 	}
 
-	private void validateBelongToVote(VoteOption voteOption, Vote vote) {
-		if (!voteOption.getVote().equals(vote)) {
-			throw new BadRequestException(ErrorCode.BAD_REQUEST);
-		}
-	}
-
-	private void validateAlreadyVoted(Uuid uuid, VoteOption voteOption) {
+	private void validateAlreadyVoted(Uuid uuid) {
 		if (uuidVoteOptionRepository.existsByUuid(uuid)) {
 			throw new BadRequestException(ErrorCode.FAIL_ALREADY_VOTE);
 		}

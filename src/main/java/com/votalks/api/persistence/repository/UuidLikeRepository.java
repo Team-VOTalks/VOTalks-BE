@@ -11,9 +11,6 @@ import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidLike;
 
 public interface UuidLikeRepository extends JpaRepository<UuidLike, Long> {
-	@Query("SELECT COUNT(ul) > 0 FROM UuidLike ul WHERE ul.uuid = :uuid AND ul.like = :like")
-	boolean existsByUuidAndLike(@Param("uuid") Uuid uuid, @Param("like") Like like);
-
 	@Query("SELECT ul FROM UuidLike ul WHERE ul.uuid = :uuid AND ul.like = :like")
 	Optional<UuidLike> findByUuidAndLike(@Param("uuid") Uuid uuid, @Param("like") Like like);
 }
