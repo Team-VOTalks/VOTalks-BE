@@ -105,18 +105,15 @@ public class Comment {
 	}
 
 	public static CommentReadDto toCommentReadDto(
-		Comment comment,
-		int likeCount,
-		int dislikeCount,
-		int totalReplyCount
+		Comment comment
 	) {
 		return CommentReadDto.builder()
 			.userNumber(comment.getUserNumber())
 			.content(comment.getContent())
-			.likeCount(likeCount)
+			.likeCount(comment.getLike().getLikeCount())
 			.createAt(comment.getCreatedAt())
-			.dislikeCount(dislikeCount)
-			.totalReplyCount(totalReplyCount)
+			.dislikeCount(comment.getLike().getDislikeCount())
+			.totalReplyCount(comment.getReply().size())
 			.build();
 	}
 }

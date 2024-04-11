@@ -137,6 +137,7 @@ public class VoteService {
 		if (StringUtils.isEmpty(uuid) || uuid.length() != UUID_LENGTH_STANDARD) {
 			return uuidRepository.save(Uuid.create(UUID.randomUUID()));
 		}
+		
 		return uuidRepository.findById(Uuid.fromString(uuid))
 			.orElseGet(() -> uuidRepository.save(Uuid.create(UUID.randomUUID())));
 	}

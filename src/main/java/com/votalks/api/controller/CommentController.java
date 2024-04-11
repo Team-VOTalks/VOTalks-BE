@@ -27,6 +27,15 @@ public class CommentController {
 		commentService.create(dto, id);
 	}
 
+	@PostMapping("/comment/{commentId}/like")
+	public void like(
+		@PathVariable Long id,
+		@PathVariable Long commentId,
+		@RequestBody String uuid
+	) {
+		commentService.like(id, commentId, uuid);
+	}
+
 	@GetMapping
 	public Page<CommentReadDto> read(
 		@RequestParam(defaultValue = "0") int page,
