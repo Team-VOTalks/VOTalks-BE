@@ -69,8 +69,7 @@ class CommentControllerTest {
 			"테스트입니다.",
 			"dev",
 			"테스트입니다",
-			Arrays.asList("1번", "2번"),
-			2);
+			Arrays.asList("1번", "2번"));
 
 		Vote vote = Vote.create(voteCreateDto, null);
 		vote = voteRepository.save(vote);
@@ -105,7 +104,7 @@ class CommentControllerTest {
 		CommentCreateDto commentCreateDto = new CommentCreateDto("테스트", null);
 
 		// When & Then
-		this.mockMvc.perform(post("/api/v1/comments/" + 1L).contentType(MediaType.APPLICATION_JSON)
+		this.mockMvc.perform(post("/api/v1/votes/" + 1L + "/comment").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(commentCreateDto))).andExpect(status().isOk());
 	}
 
@@ -113,7 +112,7 @@ class CommentControllerTest {
 	@DisplayName("페이징된 댓글 조회 성공")
 	void readPagedComments_success() throws Exception {
 
-		mockMvc.perform(get("/api/v1/comments/" + 1L)
+		mockMvc.perform(get("/api/v1/votes/" + 1L + "/comment")
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk());
 	}
