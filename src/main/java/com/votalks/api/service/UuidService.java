@@ -26,29 +26,12 @@ public class UuidService {
 	private final UuidRepository uuidRepository;
 
 	public Uuid getOrCreate(HttpServletRequest request, HttpServletResponse response) {
-		String uuidValue = null;
 		Cookie[] cookies = request.getCookies();
+		String uuidValue = getCookie(cookies);
 
-		if (cookies != null) {
-			// "X-VOTalks-Authorization" 이름을 가진 쿠키를 찾습니다.
-			Optional<Cookie> uuidCookie = Arrays.stream(cookies)
-				.filter(c -> c.getName().equals(UUID_COOKIE))
-				.findFirst();
-
-			if (uuidCookie.isPresent()) {
-				uuidValue = uuidCookie.get().getValue(); //X-VOTalks-Authorization 값 가져오기
-			}
-		}
-
-		// 쿠키 값 검증 (null 체크 및 길이 검증)
 		if (StringUtils.isEmpty(uuidValue) || uuidValue.length() != UUID_LENGTH_STANDARD) {
 			Uuid newUuid = uuidRepository.save(Uuid.create(UUID.randomUUID()));
-
-			// 새로운 쿠키 생성 및 응답에 추가
-			Cookie newCookie = new Cookie(UUID_COOKIE, newUuid.toString().replace("-", ""));
-			newCookie.setPath("/");
-			newCookie.setHttpOnly(true);
-			response.addCookie(newCookie);
+			createNewCookie(response, newUuid);
 
 			return newUuid;
 		}
@@ -57,14 +40,32 @@ public class UuidService {
 			.orElseGet(() -> {
 				Uuid newUuid = Uuid.create(UUID.randomUUID());
 				Uuid saveUuid = uuidRepository.save(newUuid);
-
-				Cookie newCookie = new Cookie(UUID_COOKIE, saveUuid.toString().replace("-", ""));
-				newCookie.setPath("/");
-				newCookie.setHttpOnly(true);
-				response.addCookie(newCookie);
+				createNewCookie(response, saveUuid);
 
 				return saveUuid;
 			});
+	}
+
+	private static String getCookie(Cookie[] cookies) {
+		String uuidValue = null;
+
+		if (cookies != null) {
+			Optional<Cookie> uuidCookie = Arrays.stream(cookies)
+				.filter(c -> c.getName().equals(UUID_COOKIE))
+				.findFirst();
+
+			if (uuidCookie.isPresent()) {
+				uuidValue = uuidCookie.get().getValue();
+			}
+		}
+		return uuidValue;
+	}
+
+	private static void createNewCookie(HttpServletResponse response, Uuid saveUuid) {
+		Cookie newCookie = new Cookie(UUID_COOKIE, saveUuid.toString().replace("-", ""));
+		newCookie.setPath("/");
+		newCookie.setHttpOnly(true);
+		response.addCookie(newCookie);
 	}
 
 	public HttpHeaders getHttpHeaders(Uuid uuid) {
