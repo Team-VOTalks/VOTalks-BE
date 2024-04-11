@@ -28,13 +28,13 @@ public class VoteController {
 		voteService.create(dto);
 	}
 
-	@PostMapping("/{id}")
-	public void select(@RequestBody @Valid VoteTakeDto dto, @PathVariable Long id) {
+	@PostMapping("/{vote-id}")
+	public void select(@RequestBody @Valid VoteTakeDto dto, @PathVariable(name = "vote-id") Long id) {
 		voteService.select(dto, id);
 	}
 
-	@GetMapping("/{id}")
-	public VoteReadDto read(@PathVariable Long id) {
+	@GetMapping("/{vote-id}")
+	public VoteReadDto read(@PathVariable(name = "vote-id") Long id) {
 		return voteService.read(id);
 	}
 
