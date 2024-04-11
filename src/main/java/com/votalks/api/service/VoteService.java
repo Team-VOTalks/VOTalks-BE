@@ -59,11 +59,9 @@ public class VoteService {
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 		final VoteOption voteOption = voteOptionRepository.findById(dto.voteOptionId())
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_OPTION_FOUND));
-		final int limit = uuidVoteOptionRepository.countByUuidAndVoteOption(uuid, voteOption);
 
 		validateBelongToVote(voteOption, vote);
 		validateAlreadyVoted(uuid, voteOption);
-		validateLimit(vote, limit);
 		voteOption.select();
 
 		final UuidVoteOption uuidVoteOption = UuidVoteOption.create(uuid, voteOption);
@@ -117,14 +115,8 @@ public class VoteService {
 		}
 	}
 
-	private void validateLimit(Vote vote, int limit) {
-		if (vote.getSelectCount() == limit) {
-			throw new BadRequestException(ErrorCode.VOTE_LIMIT_REACHED);
-		}
-	}
-
 	private void validateAlreadyVoted(Uuid uuid, VoteOption voteOption) {
-		if (uuidVoteOptionRepository.existsByUuidAndVoteOption(uuid, voteOption)) {
+		if (uuidVoteOptionRepository.existsByUuid(uuid)) {
 			throw new BadRequestException(ErrorCode.FAIL_ALREADY_VOTE);
 		}
 	}

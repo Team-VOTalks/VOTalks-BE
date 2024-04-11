@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class LikeController {
 	private final LikeService likeService;
 
-	@PostMapping("/vote/{vote-id}/comment/{comment-id}/like-type")
+	@PostMapping("/votes/{vote-id}/comments/{comment-id}/like-type")
 	public void like(
 		@PathVariable(name = "vote-id") Long id,
 		@PathVariable(name = "comment-id") Long commentId,

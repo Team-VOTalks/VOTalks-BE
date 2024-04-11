@@ -48,9 +48,6 @@ public class Vote {
 	@Column(name = "create_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
-	@Column(name = "select_count", nullable = false)
-	private int selectCount;
-
 	@Enumerated(EnumType.STRING)
 	@Column(name = "category", nullable = false)
 	private Category category;
@@ -63,13 +60,11 @@ public class Vote {
 	private Vote(
 		String title,
 		String description,
-		int selectCount,
 		Category category,
 		Uuid uuid
 	) {
 		this.title = title;
 		this.description = description;
-		this.selectCount = selectCount;
 		this.category = category;
 		this.uuid = uuid;
 	}
@@ -78,7 +73,6 @@ public class Vote {
 		return Vote.builder()
 			.title(dto.title())
 			.description(dto.description())
-			.selectCount(dto.selectCount())
 			.category(Category.fromValue(dto.category()))
 			.uuid(uuid)
 			.build();

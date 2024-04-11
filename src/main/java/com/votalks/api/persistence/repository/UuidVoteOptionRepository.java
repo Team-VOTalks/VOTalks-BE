@@ -9,7 +9,7 @@ import com.votalks.api.persistence.entity.UuidVoteOption;
 import com.votalks.api.persistence.entity.VoteOption;
 
 public interface UuidVoteOptionRepository extends JpaRepository<UuidVoteOption, Long> {
-	boolean existsByUuidAndVoteOption(Uuid uuid, VoteOption voteOption);
+	boolean existsByUuid(Uuid uuid);
 
 	@Query("SELECT COUNT(uvo) FROM UuidVoteOption uvo WHERE uvo.uuid = :uuid AND uvo.voteOption = :voteOption")
 	int countByUuidAndVoteOption(@Param("uuid") Uuid uuid, @Param("voteOption") VoteOption voteOption);
