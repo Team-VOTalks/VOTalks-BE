@@ -12,12 +12,25 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum LikeType {
-	CREATE("생성"),
-	LIKE("좋아요"),
-	DISLIKE("싫어요");
+	CREATE("생성", "create"),
+	LIKE("좋아요", "like"),
+	DISLIKE("싫어요", "dislike");
 	private final String name;
+	private final String value;
 
 	private static final Map<String, LikeType> names =
 		Collections.unmodifiableMap(Stream.of(values())
-			.collect(Collectors.toMap(LikeType::getName, Function.identity())));
+			.collect(Collectors.toMap(LikeType::getValue, Function.identity())));
+
+	public boolean isLike() {
+		return this.equals(LIKE);
+	}
+
+	public boolean isDislike() {
+		return this.equals(DISLIKE);
+	}
+
+	public static LikeType from(String value) {
+		return names.get(value);
+	}
 }
