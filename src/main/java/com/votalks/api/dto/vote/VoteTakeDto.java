@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record VoteTakeDto(
 	@NotNull
-	Long voteOptionId,
-	String uuid
+	Long voteOptionId
 ) {
 }

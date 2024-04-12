@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,8 @@ import com.votalks.api.persistence.repository.VoteRepository;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,16 +35,19 @@ public class CommentService {
 	private final LikeRepository likeRepository;
 	private final UuidService uuidService;
 
-	public void create(CommentCreateDto dto, Long id) {
+	//필요
+	public HttpHeaders create(CommentCreateDto dto, Long id, HttpServletRequest request, HttpServletResponse response) {
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
-		final Uuid uuid = uuidService.getOrCreate(dto.uuid());
+		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final int userNumber = determineUserNumber(vote, uuid);
 		final Like like = Like.create();
 		final Comment comment = Comment.create(dto, uuid, vote, like, userNumber);
 
 		likeRepository.save(like);
 		commentRepository.save(comment);
+
+		return uuidService.getHttpHeaders(uuid);
 	}
 
 	public Page<CommentReadDto> read(Long id, int page, int size) {

@@ -1,5 +1,6 @@
 package com.votalks.api.service;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,8 @@ import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,10 +27,12 @@ public class LikeService {
 	private final UuidLikeRepository uuidLikeRepository;
 	private final UuidService uuidService;
 
-	public void like(Long voteId, Long commentId, CommentLikeDto dto) {
+	//필요
+	public HttpHeaders like(Long voteId, Long commentId, CommentLikeDto dto, HttpServletRequest request,
+		HttpServletResponse response) {
 		final Comment comment = commentRepository.findByIdAndVote_Id(commentId, voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
-		final Uuid uuid = uuidService.getOrCreate(dto.uuid());
+		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Like like = comment.getLike();
 		final LikeType likeType = LikeType.from(dto.likeType());
 
@@ -38,6 +43,8 @@ public class LikeService {
 					UuidLike uuidLike = UuidLike.create(uuid, like, likeType);
 					uuidLikeRepository.save(uuidLike);
 				});
+
+		return uuidService.getHttpHeaders(uuid);
 	}
 
 	private void validateCancelLike(Like like, LikeType likeType, UuidLike uuidLike) {

@@ -38,6 +38,15 @@ public class Uuid {
 				"(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
 				"$1-$2-$3-$4-$5"));
 	}
+
+	public String fromUuid() {
+		return this.id.toString().replace("-", "");
+	}
+
+	@Override
+	public String toString() {
+		return id.toString();
+	}
 }
 
 

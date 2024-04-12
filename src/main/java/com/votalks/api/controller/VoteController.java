@@ -1,6 +1,7 @@
 package com.votalks.api.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,8 @@ import com.votalks.api.dto.vote.VoteReadDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.service.VoteService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -24,13 +27,22 @@ public class VoteController {
 	private final VoteService voteService;
 
 	@PostMapping
-	public void create(@RequestBody @Valid VoteCreateDto dto) {
-		voteService.create(dto);
+	public HttpHeaders create(
+		@RequestBody @Valid VoteCreateDto dto,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		return voteService.create(dto, request, response);
 	}
 
 	@PostMapping("/{vote-id}")
-	public void select(@RequestBody @Valid VoteTakeDto dto, @PathVariable(name = "vote-id") Long id) {
-		voteService.select(dto, id);
+	public HttpHeaders select(
+		@RequestBody @Valid VoteTakeDto dto,
+		@PathVariable(name = "vote-id") Long id,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		return voteService.select(dto, id, request, response);
 	}
 
 	@GetMapping("/{vote-id}")

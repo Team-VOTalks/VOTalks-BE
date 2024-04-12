@@ -65,7 +65,6 @@ class CommentControllerTest {
 	@BeforeEach
 	void setUp() {
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
-			null,
 			"테스트입니다.",
 			"dev",
 			"테스트입니다",
@@ -83,8 +82,7 @@ class CommentControllerTest {
 		voteOptionRepository.saveAll(voteOptions);
 
 		CommentCreateDto commentCreateDto = new CommentCreateDto(
-			"안녕",
-			"null"
+			"안녕"
 		);
 		Like like = Like.create();
 		Comment comment = Comment.create(
@@ -101,10 +99,10 @@ class CommentControllerTest {
 	@Test
 	@DisplayName("POST - 댓글을 성공적으로 생성한다. - void")
 	void create_vote_success() throws Exception {
-		CommentCreateDto commentCreateDto = new CommentCreateDto("테스트", null);
+		CommentCreateDto commentCreateDto = new CommentCreateDto("테스트");
 
 		// When & Then
-		this.mockMvc.perform(post("/api/v1/votes/" + 1L + "/comment").contentType(MediaType.APPLICATION_JSON)
+		this.mockMvc.perform(post("/api/v1/votes/" + 1L + "/comments").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(commentCreateDto))).andExpect(status().isOk());
 	}
 
@@ -112,7 +110,7 @@ class CommentControllerTest {
 	@DisplayName("페이징된 댓글 조회 성공")
 	void readPagedComments_success() throws Exception {
 
-		mockMvc.perform(get("/api/v1/votes/" + 1L + "/comment")
+		mockMvc.perform(get("/api/v1/votes/" + 1L + "/comments")
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk());
 	}

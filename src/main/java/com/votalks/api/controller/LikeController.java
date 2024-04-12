@@ -1,5 +1,6 @@
 package com.votalks.api.controller;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.votalks.api.dto.comment.CommentLikeDto;
 import com.votalks.api.service.LikeService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -18,11 +21,13 @@ public class LikeController {
 	private final LikeService likeService;
 
 	@PostMapping("/votes/{vote-id}/comments/{comment-id}/like-type")
-	public void like(
+	public HttpHeaders like(
 		@PathVariable(name = "vote-id") Long id,
 		@PathVariable(name = "comment-id") Long commentId,
-		@RequestBody CommentLikeDto dto
+		@RequestBody CommentLikeDto dto,
+		HttpServletRequest request,
+		HttpServletResponse response
 	) {
-		likeService.like(id, commentId, dto);
+		return likeService.like(id, commentId, dto, request, response);
 	}
 }
