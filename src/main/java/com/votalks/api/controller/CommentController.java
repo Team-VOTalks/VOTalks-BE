@@ -39,7 +39,10 @@ public class CommentController {
 	public Page<CommentReadDto> read(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
-		@PathVariable(name = "vote-id") Long id) {
-		return commentService.read(id, page, size);
+		@PathVariable(name = "vote-id") Long id,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		return commentService.read(id, page, size, request, response);
 	}
 }

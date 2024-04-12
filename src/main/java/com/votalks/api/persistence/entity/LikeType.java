@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum LikeType {
-	CREATE("생성", "create"),
+	NONE("없음", "none"),
 	LIKE("좋아요", "like"),
 	DISLIKE("싫어요", "dislike");
 	private final String name;
