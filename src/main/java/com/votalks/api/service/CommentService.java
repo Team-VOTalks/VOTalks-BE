@@ -2,6 +2,10 @@ package com.votalks.api.service;
 
 import static com.votalks.global.common.util.GlobalConstant.*;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,10 +18,13 @@ import com.votalks.api.dto.comment.CommentCreateDto;
 import com.votalks.api.dto.comment.CommentReadDto;
 import com.votalks.api.persistence.entity.Comment;
 import com.votalks.api.persistence.entity.Like;
+import com.votalks.api.persistence.entity.LikeType;
 import com.votalks.api.persistence.entity.Uuid;
+import com.votalks.api.persistence.entity.UuidLike;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.repository.CommentRepository;
 import com.votalks.api.persistence.repository.LikeRepository;
+import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
@@ -34,9 +41,15 @@ public class CommentService {
 	private final VoteRepository voteRepository;
 	private final LikeRepository likeRepository;
 	private final UuidService uuidService;
+	private final UuidLikeRepository uuidLikeRepository;
 
 	//필요
-	public HttpHeaders create(CommentCreateDto dto, Long id, HttpServletRequest request, HttpServletResponse response) {
+	public HttpHeaders create(
+		CommentCreateDto dto,
+		Long id,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 		final Uuid uuid = uuidService.getOrCreate(request, response);
@@ -50,13 +63,32 @@ public class CommentService {
 		return uuidService.getHttpHeaders(uuid);
 	}
 
-	public Page<CommentReadDto> read(Long id, int page, int size) {
+	public Page<CommentReadDto> read(
+		Long voteId,
+		int page,
+		int size,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
 		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		final Vote vote = voteRepository.findById(id)
+		final Vote vote = voteRepository.findById(voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+		final Uuid uuid = uuidService.getOrCreate(request, response);
+		final Page<Comment> comments = commentRepository.findAllByVote(vote, pageable);
+		final List<UuidLike> uuidLikes = uuidLikeRepository.findByUuidAndVote(uuid, vote);
 
-		return commentRepository.findAllByVote(vote, pageable)
-			.map(Comment::toCommentReadDto);
+		Map<Long, LikeType> likedCommentIdToTypeMap = uuidLikes.stream()
+			.collect(Collectors.toMap(
+				uuidLike -> uuidLike.getLike().getId(),  // 댓글의 ID를 가져오는 방법
+				UuidLike::getLikeType,  // 좋아요의 타입
+				(existing, replacement) -> existing  // 충돌 시 기존 값을 유지
+			));
+
+		return comments.map(comment -> {
+			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(comment.getId(), LikeType.NONE);
+
+			return Comment.toCommentReadDto(comment, likeType.getValue());
+		});
 	}
 
 	private int determineUserNumber(Vote vote, Uuid uuid) {
