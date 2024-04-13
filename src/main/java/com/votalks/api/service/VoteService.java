@@ -4,6 +4,8 @@ import static java.util.function.Predicate.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.votalks.api.dto.vote.VoteCreateDto;
 import com.votalks.api.dto.vote.VoteOptionWithCountDto;
 import com.votalks.api.dto.vote.VoteReadDto;
+import com.votalks.api.dto.vote.VoteResponse;
 import com.votalks.api.dto.vote.VoteTakeDto;
 import com.votalks.api.persistence.entity.Category;
 import com.votalks.api.persistence.entity.Uuid;
@@ -62,8 +65,7 @@ public class VoteService {
 		return uuidService.getHttpHeaders(uuid);
 	}
 
-	//필요
-	public HttpHeaders select(
+	public VoteResponse<List<VoteOptionWithCountDto>> select(
 		VoteTakeDto dto,
 		Long id,
 		HttpServletRequest request,
@@ -73,46 +75,76 @@ public class VoteService {
 		final VoteOption voteOption = voteOptionRepository.findByIdAndVote_Id(dto.voteOptionId(), id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_OPTION_FOUND));
 
-		validateAlreadyVoted(uuid);
+		validateAlreadyVoted(uuid, voteOption);
 		voteOption.select();
 
+		final List<VoteOptionWithCountDto> voteOptionWithCount = voteOptionRepository.findAllByVote_Id(id)
+			.stream()
+			.map(vo -> vo.read(dto.voteOptionId()))
+			.toList();
 		final UuidVoteOption uuidVoteOption = UuidVoteOption.create(uuid, voteOption);
-		uuidVoteOptionRepository.save(uuidVoteOption);
 
-		return uuidService.getHttpHeaders(uuid);
+		uuidVoteOptionRepository.save(uuidVoteOption);
+		uuidService.getHttpHeaders(uuid);
+
+		final HttpHeaders headers = uuidService.getHttpHeaders(uuid);
+
+		return new VoteResponse<>(headers, voteOptionWithCount);
 	}
 
 	@Transactional(readOnly = true)
-	public VoteReadDto read(Long id) {
+	public VoteResponse<VoteReadDto> read(
+		Long id,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Vote vote = voteRepository.findById(id)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+		final HttpHeaders headers = uuidService.getHttpHeaders(uuid);
 
-		return getReadDto(vote);
+		return new VoteResponse<>(headers, getReadDto(vote, uuid));
 	}
 
 	@Transactional(readOnly = true)
-	public Page<VoteReadDto> readAll(int page, int size, String category) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		Page<Vote> votes = getPagedVotesByCategory(category, pageable);
+	public VoteResponse<Page<VoteReadDto>> readAll(
+		int page,
+		int size,
+		String category,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		final Uuid uuid = uuidService.getOrCreate(request, response);
+		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		final Page<Vote> votes = getPagedVotesByCategory(category, pageable);
+		final HttpHeaders headers = uuidService.getHttpHeaders(uuid);
 
-		return votes.map(this::getReadDto);
+		return new VoteResponse<>(headers, votes.map(vote -> getReadDto(vote, uuid)));
 	}
 
-	private VoteReadDto getReadDto(Vote vote) {
-		final List<VoteOptionWithCountDto> voteOptionsWithCounts = voteOptionRepository.findAllByVote(vote)
+	private VoteReadDto getReadDto(Vote vote, Uuid uuid) {
+		final List<VoteOption> selectedVoteOptions = uuidVoteOptionRepository.findAllVoteOptionsByUuidAndVoteId(uuid,
+			vote);
+
+		final Set<Long> selectedVoteOptionIds = selectedVoteOptions.stream()
+			.map(VoteOption::getId)
+			.collect(Collectors.toSet());
+
+		final List<VoteOptionWithCountDto> voteOptionsWithCount = voteOptionRepository.findAllByVote(vote)
 			.stream()
-			.map(voteOption -> new VoteOptionWithCountDto(voteOption.getId(), voteOption.getContent(),
-				voteOption.getVoteCount()))
+			.map(vo -> {
+				boolean isSelected = selectedVoteOptionIds.contains(vo.getId());
+				return vo.read(isSelected);
+			})
 			.toList();
 
-		final int totalVoteCount = voteOptionsWithCounts.stream()
-			.map(VoteOptionWithCountDto::count)
-			.mapToInt(Integer::intValue)
+		final int totalVoteCount = voteOptionsWithCount.stream()
+			.mapToInt(VoteOptionWithCountDto::count)
 			.sum();
 
 		final int totalCommentCount = commentRepository.countByVote(vote);
 
-		return vote.toVoteReadDto(totalVoteCount, voteOptionsWithCounts, totalCommentCount);
+		return vote.toVoteReadDto(totalVoteCount, voteOptionsWithCount, totalCommentCount);
 	}
 
 	private Page<Vote> getPagedVotesByCategory(String category, Pageable pageable) {
@@ -123,8 +155,8 @@ public class VoteService {
 			.orElseGet(() -> voteRepository.findAll(pageable));
 	}
 
-	private void validateAlreadyVoted(Uuid uuid) {
-		if (uuidVoteOptionRepository.existsByUuid(uuid)) {
+	private void validateAlreadyVoted(Uuid uuid, VoteOption voteOption) {
+		if (uuidVoteOptionRepository.existsByUuidAndVoteOption(uuid, voteOption)) {
 			throw new BadRequestException(ErrorCode.FAIL_ALREADY_VOTE);
 		}
 	}

@@ -1,5 +1,7 @@
 package com.votalks.api.persistence.entity;
 
+import com.votalks.api.dto.vote.VoteOptionWithCountDto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,6 +46,25 @@ public class VoteOption {
 
 	public void select() {
 		this.voteCount++;
+	}
+
+	public VoteOptionWithCountDto read(Long id) {
+		boolean check = id.equals(this.getId());
+		return VoteOptionWithCountDto.builder()
+			.id(this.id)
+			.title(this.content)
+			.count(this.voteCount)
+			.isCheck(check)
+			.build();
+	}
+
+	public VoteOptionWithCountDto read(boolean isSelected) {
+		return VoteOptionWithCountDto.builder()
+			.id(this.id)
+			.title(this.content)
+			.count(this.voteCount)
+			.isCheck(isSelected)
+			.build();
 	}
 }
 
