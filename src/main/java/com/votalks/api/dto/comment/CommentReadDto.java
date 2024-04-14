@@ -11,7 +11,7 @@ public record CommentReadDto(
 	LocalDateTime createAt,
 	int likeCount,
 	int dislikeCount,
-	int totalReplyCount,
+	int totalReplyCount, //적용해줘야함
 	String likeType
 ) {
 }

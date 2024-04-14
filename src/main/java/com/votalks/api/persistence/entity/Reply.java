@@ -6,8 +6,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.votalks.api.dto.comment.CommentCreateDto;
-import com.votalks.api.dto.comment.CommentReadDto;
+import com.votalks.api.dto.reply.ReplyCreateDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,10 +26,10 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "tbl_comment")
+@Table(name = "tbl_reply")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment {
+public class Reply {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -48,56 +47,53 @@ public class Comment {
 	private LocalDateTime createdAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "vote_id")
-	private Vote vote;
+	@JoinColumn(name = "comment_id")
+	private Comment comment;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "uuid")
 	private Uuid uuid;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "vote_id")
+	private Vote vote;
 
 	@OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
 	@JoinColumn(name = "like_id")
 	private Like like;
 
 	@Builder
-	private Comment(
+	private Reply(
 		String content,
 		int userNumber,
+		Comment comment,
 		Vote vote,
 		Uuid uuid,
 		Like like
 	) {
 		this.content = content;
 		this.userNumber = userNumber;
+		this.comment = comment;
 		this.vote = vote;
 		this.uuid = uuid;
 		this.like = like;
 	}
 
-	public static Comment create(
-		CommentCreateDto dto,
+	public static Reply create(
+		ReplyCreateDto dto,
 		Uuid uuid,
 		Vote vote,
 		Like like,
+		Comment comment,
 		int userNumber
 	) {
-		return Comment.builder()
+		return Reply.builder()
 			.content(dto.content())
 			.uuid(uuid)
 			.like(like)
+			.comment(comment)
 			.userNumber(userNumber)
 			.vote(vote)
-			.build();
-	}
-
-	public static CommentReadDto toCommentReadDto(Comment comment, String likeType) {
-		return CommentReadDto.builder()
-			.userNumber(comment.getUserNumber())
-			.content(comment.getContent())
-			.likeCount(comment.getLike().getLikeCount())
-			.createAt(comment.getCreatedAt())
-			.dislikeCount(comment.getLike().getDislikeCount())
-			.likeType(likeType)
 			.build();
 	}
 }
