@@ -24,6 +24,7 @@ import com.votalks.api.persistence.entity.UuidLike;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.repository.CommentRepository;
 import com.votalks.api.persistence.repository.LikeRepository;
+import com.votalks.api.persistence.repository.ReplyRepository;
 import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
 import com.votalks.global.error.exception.NotFoundException;
@@ -42,6 +43,7 @@ public class CommentService {
 	private final LikeRepository likeRepository;
 	private final UuidService uuidService;
 	private final UuidLikeRepository uuidLikeRepository;
+	private final ReplyRepository replyRepository;
 
 	//필요
 	public HttpHeaders create(
@@ -86,8 +88,9 @@ public class CommentService {
 
 		return comments.map(comment -> {
 			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(comment.getId(), LikeType.NONE);
+			final int totalReplyCount = replyRepository.countByComment(comment);
 
-			return Comment.toCommentReadDto(comment, likeType.getValue());
+			return Comment.toCommentReadDto(comment, likeType.getValue(), totalReplyCount);
 		});
 	}
 
