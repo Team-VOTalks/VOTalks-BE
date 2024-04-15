@@ -1,9 +1,9 @@
-package com.votalks.api.dto.vote;
+package com.votalks.api.dto.voteOption;
 
 import lombok.Builder;
 
 @Builder
-public record VoteOptionWithCountDto(
+public record VoteOptionReadDto(
 	Long id,
 	String title,
 	int count,

@@ -7,8 +7,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.votalks.api.dto.vote.VoteCreateDto;
-import com.votalks.api.dto.vote.VoteOptionWithCountDto;
 import com.votalks.api.dto.vote.VoteReadDto;
+import com.votalks.api.dto.voteOption.VoteOptionReadDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -80,7 +80,7 @@ public class Vote {
 
 	public VoteReadDto toVoteReadDto(
 		int totalVoteCount,
-		List<VoteOptionWithCountDto> voteOptionWithCounts,
+		List<VoteOptionReadDto> voteOptionWithCounts,
 		int totalCommentCount
 	) {
 		return VoteReadDto.builder()

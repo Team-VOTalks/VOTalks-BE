@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,9 +67,7 @@ public class UuidService {
 		response.addCookie(newCookie);
 	}
 
-	public HttpHeaders getHttpHeaders(Uuid uuid) {
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set(UUID_COOKIE, uuid.fromUuid());
-		return responseHeaders;
+	public void setHttpHeaders(HttpServletResponse response, Uuid uuid) {
+		response.setHeader(UUID_COOKIE, uuid.fromUuid());
 	}
 }

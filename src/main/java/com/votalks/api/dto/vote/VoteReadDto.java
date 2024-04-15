@@ -3,6 +3,8 @@ package com.votalks.api.dto.vote;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.votalks.api.dto.voteOption.VoteOptionReadDto;
+
 import lombok.Builder;
 
 @Builder
@@ -13,7 +15,7 @@ public record VoteReadDto(
 	LocalDateTime createAt,
 	int totalVoteCount,
 	String description,
-	List<VoteOptionWithCountDto> voteOptionWithCounts,
+	List<VoteOptionReadDto> voteOptionWithCounts,
 	int totalCommentCount
 ) {
 }
