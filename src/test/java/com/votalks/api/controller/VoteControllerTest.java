@@ -105,7 +105,7 @@ class VoteControllerTest {
 		// Given
 		Vote savedVote = voteRepository.findAll().get(0);
 		VoteOptionWithCountDto voteOptionWithCountDto = new VoteOptionWithCountDto(savedVote.getId(),
-			savedVote.getTitle(), 0);
+			savedVote.getTitle(), 0, false);
 
 		// When & Then
 		this.mockMvc.perform(get("/api/v1/votes/{id}", savedVote.getId())
