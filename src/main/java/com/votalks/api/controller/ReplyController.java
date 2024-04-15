@@ -1,7 +1,5 @@
 package com.votalks.api.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.votalks.api.dto.PageResponse;
 import com.votalks.api.dto.reply.ReplyCreateDto;
 import com.votalks.api.dto.reply.ReplyReadDto;
 import com.votalks.api.service.ReplyService;
@@ -26,18 +25,18 @@ public class ReplyController {
 	private final ReplyService replyService;
 
 	@PostMapping("/votes/{vote-id}/comments/{comment-id}")
-	public HttpHeaders create(
+	public void create(
 		@RequestBody @Valid ReplyCreateDto dto,
 		@PathVariable(name = "vote-id") Long voteId,
 		@PathVariable(name = "comment-id") Long commentId,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
-		return replyService.create(dto, voteId, commentId, request, response);
+		replyService.create(dto, voteId, commentId, request, response);
 	}
 
 	@GetMapping("/votes/{vote-id}/comments/{comment-id}")
-	public Page<ReplyReadDto> read(
+	public PageResponse<ReplyReadDto> read(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@PathVariable(name = "vote-id") Long voteId,

@@ -90,7 +90,7 @@ public class Comment {
 			.build();
 	}
 
-	public static CommentReadDto toCommentReadDto(Comment comment, String likeType, int totalReplyCount) {
+	public static CommentReadDto toReadDto(Comment comment, String likeType, int totalReplyCount) {
 		return CommentReadDto.builder()
 			.userNumber(comment.getUserNumber())
 			.content(comment.getContent())

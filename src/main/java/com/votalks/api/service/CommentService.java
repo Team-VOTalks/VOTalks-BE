@@ -10,10 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.votalks.api.dto.PageInfo;
+import com.votalks.api.dto.PageResponse;
 import com.votalks.api.dto.comment.CommentCreateDto;
 import com.votalks.api.dto.comment.CommentReadDto;
 import com.votalks.api.persistence.entity.Comment;
@@ -46,7 +47,7 @@ public class CommentService {
 	private final ReplyRepository replyRepository;
 
 	//필요
-	public HttpHeaders create(
+	public void create(
 		CommentCreateDto dto,
 		Long id,
 		HttpServletRequest request,
@@ -61,11 +62,10 @@ public class CommentService {
 
 		likeRepository.save(like);
 		commentRepository.save(comment);
-
-		return uuidService.getHttpHeaders(uuid);
+		uuidService.setHttpHeaders(response, uuid);
 	}
 
-	public Page<CommentReadDto> read(
+	public PageResponse<CommentReadDto> read(
 		Long voteId,
 		int page,
 		int size,
@@ -78,6 +78,9 @@ public class CommentService {
 		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Page<Comment> comments = commentRepository.findAllByVote(vote, pageable);
 		final List<UuidLike> uuidLikes = uuidLikeRepository.findByUuidAndVote(uuid, vote);
+		final PageInfo pageInfo = new PageInfo(comments);
+
+		uuidService.setHttpHeaders(response, uuid);
 
 		Map<Long, LikeType> likedCommentIdToTypeMap = uuidLikes.stream()
 			.collect(Collectors.toMap(
@@ -86,12 +89,12 @@ public class CommentService {
 				(existing, replacement) -> existing  // 충돌 시 기존 값을 유지
 			));
 
-		return comments.map(comment -> {
+		return new PageResponse<>(comments.map(comment -> {
 			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(comment.getId(), LikeType.NONE);
 			final int totalReplyCount = replyRepository.countByComment(comment);
 
-			return Comment.toCommentReadDto(comment, likeType.getValue(), totalReplyCount);
-		});
+			return Comment.toReadDto(comment, likeType.getValue(), totalReplyCount);
+		}).toList(), pageInfo);
 	}
 
 	private int determineUserNumber(Vote vote, Uuid uuid) {

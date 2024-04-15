@@ -10,10 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.votalks.api.dto.PageInfo;
+import com.votalks.api.dto.PageResponse;
 import com.votalks.api.dto.reply.ReplyCreateDto;
 import com.votalks.api.dto.reply.ReplyReadDto;
 import com.votalks.api.persistence.entity.Comment;
@@ -46,7 +47,7 @@ public class ReplyService {
 	private final ReplyRepository replyRepository;
 	private final UuidLikeRepository uuidLikeRepository;
 
-	public HttpHeaders create(
+	public void create(
 		ReplyCreateDto dto,
 		Long voteId,
 		Long commentId,
@@ -64,11 +65,10 @@ public class ReplyService {
 
 		likeRepository.save(like);
 		replyRepository.save(reply);
-
-		return uuidService.getHttpHeaders(uuid);
+		uuidService.setHttpHeaders(response, uuid);
 	}
 
-	public Page<ReplyReadDto> read(
+	public PageResponse<ReplyReadDto> read(
 		Long voteId,
 		Long commentId,
 		int page,
@@ -82,6 +82,9 @@ public class ReplyService {
 		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Page<Reply> replies = replyRepository.findAllByComment(comment, pageable);
 		final List<UuidLike> uuidLikes = uuidLikeRepository.findByUuidAndVoteIdWithReplies(uuid, voteId);
+		final PageInfo pageInfo = new PageInfo(replies);
+
+		uuidService.setHttpHeaders(response, uuid);
 
 		Map<Long, LikeType> likedCommentIdToTypeMap = uuidLikes.stream()
 			.collect(Collectors.toMap(
@@ -90,10 +93,10 @@ public class ReplyService {
 				(existing, replacement) -> existing  // 충돌 시 기존 값을 유지
 			));
 
-		return replies.map(reply -> {
+		return new PageResponse<>(replies.map(reply -> {
 			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(reply.getId(), LikeType.NONE);
 			return Reply.toReplyReadDto(reply, likeType.getValue());
-		});
+		}).toList(), pageInfo);
 	}
 
 	private int determineUserNumber(Vote vote, Uuid uuid) {

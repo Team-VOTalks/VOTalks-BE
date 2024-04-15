@@ -18,8 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.votalks.api.dto.vote.VoteCreateDto;
-import com.votalks.api.dto.vote.VoteOptionWithCountDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
+import com.votalks.api.dto.voteOption.VoteOptionReadDto;
 import com.votalks.api.persistence.entity.Vote;
 import com.votalks.api.persistence.entity.VoteOption;
 import com.votalks.api.persistence.repository.UuidRepository;
@@ -104,8 +104,8 @@ class VoteControllerTest {
 	void read_voteSuccess() throws Exception {
 		// Given
 		Vote savedVote = voteRepository.findAll().get(0);
-		VoteOptionWithCountDto voteOptionWithCountDto = new VoteOptionWithCountDto(savedVote.getId(),
-			savedVote.getTitle(), 0);
+		VoteOptionReadDto voteOptionWithCountDto = new VoteOptionReadDto(savedVote.getId(),
+			savedVote.getTitle(), 0, false);
 
 		// When & Then
 		this.mockMvc.perform(get("/api/v1/votes/{id}", savedVote.getId())
