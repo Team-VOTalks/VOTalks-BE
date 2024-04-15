@@ -22,5 +22,11 @@ public interface UuidLikeRepository extends JpaRepository<UuidLike, Long> {
 	@Query("SELECT ul FROM UuidLike ul JOIN Comment c ON ul.like.id = c.like.id WHERE c.vote = :vote AND ul.uuid = :uuid")
 	List<UuidLike> findByUuidAndVote(Uuid uuid, Vote vote);
 
+	/**
+	 * 댓글과 투표에 속해 있는 댓글에 대한 답변(reply)에서 like와 uuidLike가 일치하며, uuid가 일치하는 uuidLike를 가져온다.
+	 */
+	@Query("SELECT ul FROM UuidLike ul JOIN Reply r ON ul.like.id = r.comment.like.id WHERE r.vote.id = :voteId AND r.comment.vote.id = :voteId AND ul.uuid = :uuid")
+	List<UuidLike> findByUuidAndVoteIdWithReplies(Uuid uuid, Long voteId);
+
 	List<UuidLike> findByUuid(Uuid uuid);
 }

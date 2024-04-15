@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.votalks.api.dto.comment.CommentLikeDto;
+import com.votalks.api.dto.like.likeCreateDto;
 import com.votalks.api.service.LikeService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,10 +24,22 @@ public class LikeController {
 	public HttpHeaders like(
 		@PathVariable(name = "vote-id") Long id,
 		@PathVariable(name = "comment-id") Long commentId,
-		@RequestBody CommentLikeDto dto,
+		@RequestBody likeCreateDto dto,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
 		return likeService.like(id, commentId, dto, request, response);
+	}
+
+	@PostMapping("/votes/{vote-id}/comments/{comment-id}/replies/{reply-id}/like-type")
+	public HttpHeaders like(
+		@PathVariable(name = "vote-id") Long voteId,
+		@PathVariable(name = "comment-id") Long commentId,
+		@PathVariable(name = "reply-id") Long replyId,
+		@RequestBody likeCreateDto dto,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		return likeService.like(voteId, commentId, replyId, dto, request, response);
 	}
 }

@@ -14,11 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.votalks.api.dto.comment.CommentCreateDto;
-import com.votalks.api.dto.comment.CommentReadDto;
+import com.votalks.api.dto.reply.ReplyCreateDto;
+import com.votalks.api.dto.reply.ReplyReadDto;
 import com.votalks.api.persistence.entity.Comment;
 import com.votalks.api.persistence.entity.Like;
 import com.votalks.api.persistence.entity.LikeType;
+import com.votalks.api.persistence.entity.Reply;
 import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidLike;
 import com.votalks.api.persistence.entity.Vote;
@@ -37,47 +38,50 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class CommentService {
+public class ReplyService {
 	private final CommentRepository commentRepository;
 	private final VoteRepository voteRepository;
 	private final LikeRepository likeRepository;
 	private final UuidService uuidService;
-	private final UuidLikeRepository uuidLikeRepository;
 	private final ReplyRepository replyRepository;
+	private final UuidLikeRepository uuidLikeRepository;
 
-	//필요
 	public HttpHeaders create(
-		CommentCreateDto dto,
-		Long id,
+		ReplyCreateDto dto,
+		Long voteId,
+		Long commentId,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
-		final Vote vote = voteRepository.findById(id)
+		final Vote vote = voteRepository.findById(voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
+		final Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
 		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final int userNumber = determineUserNumber(vote, uuid);
 		final Like like = Like.create();
-		final Comment comment = Comment.create(dto, uuid, vote, like, userNumber);
+		final Reply reply = Reply.create(dto, uuid, vote, like, comment, userNumber);
 
 		likeRepository.save(like);
-		commentRepository.save(comment);
+		replyRepository.save(reply);
 
 		return uuidService.getHttpHeaders(uuid);
 	}
 
-	public Page<CommentReadDto> read(
+	public Page<ReplyReadDto> read(
 		Long voteId,
+		Long commentId,
 		int page,
 		int size,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
+		final Comment comment = commentRepository.findByIdAndVote_Id(commentId, voteId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
 		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		final Vote vote = voteRepository.findById(voteId)
-			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 		final Uuid uuid = uuidService.getOrCreate(request, response);
-		final Page<Comment> comments = commentRepository.findAllByVote(vote, pageable);
-		final List<UuidLike> uuidLikes = uuidLikeRepository.findByUuidAndVote(uuid, vote);
+		final Page<Reply> replies = replyRepository.findAllByComment(comment, pageable);
+		final List<UuidLike> uuidLikes = uuidLikeRepository.findByUuidAndVoteIdWithReplies(uuid, voteId);
 
 		Map<Long, LikeType> likedCommentIdToTypeMap = uuidLikes.stream()
 			.collect(Collectors.toMap(
@@ -86,11 +90,9 @@ public class CommentService {
 				(existing, replacement) -> existing  // 충돌 시 기존 값을 유지
 			));
 
-		return comments.map(comment -> {
-			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(comment.getId(), LikeType.NONE);
-			final int totalReplyCount = replyRepository.countByComment(comment);
-
-			return Comment.toCommentReadDto(comment, likeType.getValue(), totalReplyCount);
+		return replies.map(reply -> {
+			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(reply.getId(), LikeType.NONE);
+			return Reply.toReplyReadDto(reply, likeType.getValue());
 		});
 	}
 

@@ -4,13 +4,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.votalks.api.dto.comment.CommentLikeDto;
+import com.votalks.api.dto.like.likeCreateDto;
 import com.votalks.api.persistence.entity.Comment;
 import com.votalks.api.persistence.entity.Like;
 import com.votalks.api.persistence.entity.LikeType;
+import com.votalks.api.persistence.entity.Reply;
 import com.votalks.api.persistence.entity.Uuid;
 import com.votalks.api.persistence.entity.UuidLike;
 import com.votalks.api.persistence.repository.CommentRepository;
+import com.votalks.api.persistence.repository.ReplyRepository;
 import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
@@ -26,14 +28,44 @@ public class LikeService {
 	private final CommentRepository commentRepository;
 	private final UuidLikeRepository uuidLikeRepository;
 	private final UuidService uuidService;
+	private final ReplyRepository replyRepository;
 
-	//필요
-	public HttpHeaders like(Long voteId, Long commentId, CommentLikeDto dto, HttpServletRequest request,
-		HttpServletResponse response) {
+	public HttpHeaders like(
+		Long voteId,
+		Long commentId,
+		likeCreateDto dto,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
 		final Comment comment = commentRepository.findByIdAndVote_Id(commentId, voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_COMMENT_FOUND));
 		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Like like = comment.getLike();
+		final LikeType likeType = LikeType.from(dto.likeType());
+
+		uuidLikeRepository.findByUuidAndLike(uuid, like)
+			.ifPresentOrElse(
+				uuidLike -> validateCancelLike(like, likeType, uuidLike),
+				() -> {
+					UuidLike uuidLike = UuidLike.create(uuid, like, likeType);
+					uuidLikeRepository.save(uuidLike);
+				});
+
+		return uuidService.getHttpHeaders(uuid);
+	}
+
+	public HttpHeaders like(Long voteId,
+		Long commentId,
+		Long replyId,
+		likeCreateDto dto,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		final Reply reply = replyRepository.findByIdAndVote_IdAndComment_Id(replyId, voteId, commentId)
+			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_REPLY_FOUND));
+
+		final Uuid uuid = uuidService.getOrCreate(request, response);
+		final Like like = reply.getLike();
 		final LikeType likeType = LikeType.from(dto.likeType());
 
 		uuidLikeRepository.findByUuidAndLike(uuid, like)
