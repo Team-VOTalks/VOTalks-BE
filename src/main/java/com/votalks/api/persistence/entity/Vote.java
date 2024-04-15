@@ -80,7 +80,7 @@ public class Vote {
 
 	public VoteReadDto toVoteReadDto(
 		int totalVoteCount,
-		List<VoteOptionReadDto> voteOptionWithCounts,
+		List<VoteOptionReadDto> voteOption,
 		int totalCommentCount
 	) {
 		return VoteReadDto.builder()
@@ -90,7 +90,7 @@ public class Vote {
 			.createAt(this.createdAt)
 			.totalVoteCount(totalVoteCount)
 			.description(this.description)
-			.voteOptionWithCounts(voteOptionWithCounts)
+			.voteOption(voteOption)
 			.totalCommentCount(totalCommentCount)
 			.build();
 	}

@@ -15,7 +15,7 @@ public record VoteReadDto(
 	LocalDateTime createAt,
 	int totalVoteCount,
 	String description,
-	List<VoteOptionReadDto> voteOptionWithCounts,
+	List<VoteOptionReadDto> voteOption,
 	int totalCommentCount
 ) {
 }
