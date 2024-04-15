@@ -1,6 +1,5 @@
 package com.votalks.api.service;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,7 @@ public class LikeService {
 	private final UuidService uuidService;
 	private final ReplyRepository replyRepository;
 
-	public HttpHeaders like(
+	public void like(
 		Long voteId,
 		Long commentId,
 		likeCreateDto dto,
@@ -51,10 +50,10 @@ public class LikeService {
 					uuidLikeRepository.save(uuidLike);
 				});
 
-		return uuidService.getHttpHeaders(uuid);
+		uuidService.setHttpHeaders(response, uuid);
 	}
 
-	public HttpHeaders like(Long voteId,
+	public void like(Long voteId,
 		Long commentId,
 		Long replyId,
 		likeCreateDto dto,
@@ -76,7 +75,7 @@ public class LikeService {
 					uuidLikeRepository.save(uuidLike);
 				});
 
-		return uuidService.getHttpHeaders(uuid);
+		uuidService.setHttpHeaders(response, uuid);
 	}
 
 	private void validateCancelLike(Like like, LikeType likeType, UuidLike uuidLike) {

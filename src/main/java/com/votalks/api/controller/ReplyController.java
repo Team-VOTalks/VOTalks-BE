@@ -1,7 +1,6 @@
 package com.votalks.api.controller;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,14 +25,14 @@ public class ReplyController {
 	private final ReplyService replyService;
 
 	@PostMapping("/votes/{vote-id}/comments/{comment-id}")
-	public HttpHeaders create(
+	public void create(
 		@RequestBody @Valid ReplyCreateDto dto,
 		@PathVariable(name = "vote-id") Long voteId,
 		@PathVariable(name = "comment-id") Long commentId,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
-		return replyService.create(dto, voteId, commentId, request, response);
+		replyService.create(dto, voteId, commentId, request, response);
 	}
 
 	@GetMapping("/votes/{vote-id}/comments/{comment-id}")

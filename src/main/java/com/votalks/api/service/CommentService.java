@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +45,7 @@ public class CommentService {
 	private final ReplyRepository replyRepository;
 
 	//필요
-	public HttpHeaders create(
+	public void create(
 		CommentCreateDto dto,
 		Long id,
 		HttpServletRequest request,
@@ -61,8 +60,7 @@ public class CommentService {
 
 		likeRepository.save(like);
 		commentRepository.save(comment);
-
-		return uuidService.getHttpHeaders(uuid);
+		uuidService.setHttpHeaders(response, uuid);
 	}
 
 	public Page<CommentReadDto> read(
@@ -90,7 +88,7 @@ public class CommentService {
 			LikeType likeType = likedCommentIdToTypeMap.getOrDefault(comment.getId(), LikeType.NONE);
 			final int totalReplyCount = replyRepository.countByComment(comment);
 
-			return Comment.toCommentReadDto(comment, likeType.getValue(), totalReplyCount);
+			return Comment.toReadDto(comment, likeType.getValue(), totalReplyCount);
 		});
 	}
 
