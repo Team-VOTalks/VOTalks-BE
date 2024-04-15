@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.votalks.api.dto.reply.ReplyCreateDto;
+import com.votalks.api.dto.reply.ReplyReadDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -94,6 +95,17 @@ public class Reply {
 			.comment(comment)
 			.userNumber(userNumber)
 			.vote(vote)
+			.build();
+	}
+
+	public static ReplyReadDto toReplyReadDto(Reply reply, String likeType) {
+		return ReplyReadDto.builder()
+			.userNumber(reply.getUserNumber())
+			.content(reply.getContent())
+			.likeCount(reply.getLike().getLikeCount())
+			.createAt(reply.getCreatedAt())
+			.dislikeCount(reply.getLike().getDislikeCount())
+			.likeType(likeType)
 			.build();
 	}
 }
