@@ -113,11 +113,7 @@ public class VoteService {
 		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 		final Page<Vote> votes = getPagedVotesByCategory(category, pageable);
-		final PageInfo pageInfo = new PageInfo(
-			votes.getNumber(),
-			votes.getTotalPages(),
-			votes.isLast()
-		);
+		final PageInfo pageInfo = new PageInfo(votes);
 
 		uuidService.setHttpHeaders(response, uuid);
 
