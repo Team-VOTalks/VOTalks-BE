@@ -113,24 +113,23 @@ public class VoteService {
 		final Uuid uuid = uuidService.getOrCreate(request, response);
 		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 		final Page<Vote> votes = getPagedVotesByCategory(category, pageable);
-		uuidService.setHttpHeaders(response, uuid);
-
-		PageInfo pageInfo = new PageInfo(
+		final PageInfo pageInfo = new PageInfo(
 			votes.getNumber(),
 			votes.getTotalPages(),
 			votes.isLast()
 		);
+
+		uuidService.setHttpHeaders(response, uuid);
+
 		return new PageResponse<>(votes.map(vote -> getReadDto(vote, uuid)).stream().toList(), pageInfo);
 	}
 
 	private VoteReadDto getReadDto(Vote vote, Uuid uuid) {
 		final List<VoteOption> selectedVoteOptions = uuidVoteOptionRepository.findAllVoteOptionsByUuidAndVoteId(uuid,
 			vote);
-
 		final Set<Long> selectedVoteOptionIds = selectedVoteOptions.stream()
 			.map(VoteOption::getId)
 			.collect(Collectors.toSet());
-
 		final List<VoteOptionReadDto> voteOptionsWithCount = voteOptionRepository.findAllByVote(vote)
 			.stream()
 			.map(vo -> {
@@ -138,11 +137,9 @@ public class VoteService {
 				return vo.read(isSelected);
 			})
 			.toList();
-
 		final int totalVoteCount = voteOptionsWithCount.stream()
 			.mapToInt(VoteOptionReadDto::count)
 			.sum();
-
 		final int totalCommentCount = commentRepository.countByVote(vote);
 
 		return vote.toVoteReadDto(totalVoteCount, voteOptionsWithCount, totalCommentCount);
