@@ -38,10 +38,11 @@ public class CommentController {
 	public PageResponse<CommentReadDto> read(
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "latest") String sort,
 		@PathVariable(name = "vote-id") Long id,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
-		return commentService.read(id, page, size, request, response);
+		return commentService.read(id, page, size, sort, request, response);
 	}
 }

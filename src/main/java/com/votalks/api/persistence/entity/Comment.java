@@ -43,6 +43,14 @@ public class Comment {
 	@ColumnDefault("0")
 	private int userNumber;
 
+	@Column(name = "total_Reply_Count", nullable = false)
+	@ColumnDefault("0")
+	private int totalReplyCount;
+
+	@Column(name = "popular_score", nullable = false)
+	@ColumnDefault("0")
+	private int popularScore;
+
 	@CreatedDate
 	@Column(name = "create_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
@@ -100,5 +108,13 @@ public class Comment {
 			.likeType(likeType)
 			.totalReplyCount(totalReplyCount)
 			.build();
+	}
+
+	public void plus() {
+		this.totalReplyCount++;
+	}
+
+	public void judge(int score) {
+		this.popularScore = score;
 	}
 }
