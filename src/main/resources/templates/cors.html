@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CORS Test</title>
+    <script>
+        function makeRequest() {
+            fetch("http://localhost:8080/api/v1/votes", {
+                method: 'POST', // POST 요청으로 변경
+                credentials: 'include', // 쿠키 등의 인증 정보를 요청과 함께 보냄
+                headers: {
+                    'Content-Type': 'application/json', // JSON 형식의 데이터를 보내기 위해 콘텐츠 타입 설정
+                },
+                body: JSON.stringify({
+                    title: "CORS 테스트",
+                    category: "daily",
+                    description: "이것은 투표 설명 예시입니다.",
+                    voteOptions: [
+                        "옵션 1",
+                        "옵션 2",
+                        "옵션 3"
+                    ]
+                }) // 요청 본문에 DTO 데이터를 JSON 형식으로 전송
+            })
+                .then(response => response.json()) // 응답을 JSON으로 변환
+                .then(data => console.log(data)) // 응답 데이터를 콘솔에 출력
+                .catch(error => console.error('Error:', error)); // 오류가 발생한 경우 콘솔에 출력
+        }
+    </script>
+</head>
+<body>
+<h1>CORS Test</h1>
+<button onclick="makeRequest()">Send Request</button>
+</body>
+</html>
