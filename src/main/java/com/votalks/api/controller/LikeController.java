@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.votalks.api.dto.like.likeCreateDto;
+import com.votalks.api.dto.like.LikeCreateDto;
 import com.votalks.api.service.LikeService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class LikeController {
 	public void like(
 		@PathVariable(name = "vote-id") Long id,
 		@PathVariable(name = "comment-id") Long commentId,
-		@RequestBody likeCreateDto dto,
+		@RequestBody LikeCreateDto dto,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
@@ -35,7 +35,7 @@ public class LikeController {
 		@PathVariable(name = "vote-id") Long voteId,
 		@PathVariable(name = "comment-id") Long commentId,
 		@PathVariable(name = "reply-id") Long replyId,
-		@RequestBody likeCreateDto dto,
+		@RequestBody LikeCreateDto dto,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
