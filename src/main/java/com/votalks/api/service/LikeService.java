@@ -3,7 +3,7 @@ package com.votalks.api.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.votalks.api.dto.like.likeCreateDto;
+import com.votalks.api.dto.like.LikeCreateDto;
 import com.votalks.api.persistence.entity.Comment;
 import com.votalks.api.persistence.entity.Like;
 import com.votalks.api.persistence.entity.LikeType;
@@ -32,7 +32,7 @@ public class LikeService {
 	public void like(
 		Long voteId,
 		Long commentId,
-		likeCreateDto dto,
+		LikeCreateDto dto,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
@@ -60,7 +60,7 @@ public class LikeService {
 	public void like(Long voteId,
 		Long commentId,
 		Long replyId,
-		likeCreateDto dto,
+		LikeCreateDto dto,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {

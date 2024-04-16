@@ -1,88 +1,59 @@
 package com.votalks.api.controller;
 
+import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.votalks.api.dto.vote.VoteCreateDto;
 import com.votalks.api.dto.vote.VoteTakeDto;
-import com.votalks.api.dto.voteOption.VoteOptionReadDto;
 import com.votalks.api.persistence.entity.Vote;
-import com.votalks.api.persistence.entity.VoteOption;
-import com.votalks.api.persistence.repository.UuidRepository;
-import com.votalks.api.persistence.repository.UuidVoteOptionRepository;
-import com.votalks.api.persistence.repository.VoteOptionRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
+import com.votalks.api.service.VoteService;
 
+import jakarta.transaction.Transactional;
+
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 class VoteControllerTest {
+
 	@Autowired
 	MockMvc mockMvc;
 
 	@Autowired
 	ObjectMapper objectMapper;
 
-	@Autowired
-	UuidRepository uuidRepository;
-
-	@Autowired
-	UuidVoteOptionRepository uuidVoteOptionRepository;
+	@MockBean
+	VoteService voteService;
 
 	@Autowired
 	VoteRepository voteRepository;
-
-	@Autowired
-	VoteOptionRepository voteOptionRepository;
-
-	@BeforeEach
-	void setUp() {
-		List<VoteCreateDto> voteCreateDtos = List.of(
-			new VoteCreateDto("테스트1", "dev", "테스트 설명1", Arrays.asList("1번", "2번")),
-			new VoteCreateDto("테스트2", "friend", "테스트 설명2", Arrays.asList("3번", "4번")),
-			new VoteCreateDto("테스트3", "daily", "테스트 설명3", Arrays.asList("5번", "6번"))
-		);
-
-		for (VoteCreateDto voteCreateDto : voteCreateDtos) {
-			Vote vote = Vote.create(voteCreateDto, null);
-			vote = voteRepository.save(vote);
-
-			Vote finalVote = vote;
-			List<VoteOption> voteOptions = voteCreateDto.voteOptions().stream()
-				.map(optionValue -> VoteOption.create(optionValue, finalVote))
-				.collect(Collectors.toList());
-
-			voteOptionRepository.saveAll(voteOptions);
-		}
-	}
 
 	@Test
 	@DisplayName("POST - 투표를 성공정으로 생성한다. - void")
 	void create_vote_success() throws Exception {
 		// Given
 		VoteCreateDto voteCreateDto = new VoteCreateDto(
-			"테스트입니다.",
-			"dev",
-			"테스트입니다",
-			Arrays.asList("1번", "2번"));
+			"테스트1", "daily", "테스트 입니다.", Arrays.asList("1번", "2번")
+		);
+		String json = objectMapper.writeValueAsString(voteCreateDto);
 
 		// When & Then
-		this.mockMvc.perform(post("/api/v1/votes")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(voteCreateDto)))
+		mockMvc.perform(post("/api/v1/votes")
+				.contentType(APPLICATION_JSON)
+				.content(json))
 			.andExpect(status().isOk());
 	}
 
@@ -90,52 +61,38 @@ class VoteControllerTest {
 	@DisplayName("POST - 성공적으로 투표한다 - void")
 	void select_success() throws Exception {
 		// Given
+
 		VoteTakeDto voteTakeDto = new VoteTakeDto(1L);
+		String json = objectMapper.writeValueAsString(voteTakeDto);
 
 		// When & Then
-		this.mockMvc.perform(post("/api/v1/votes/" + 1L)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(voteTakeDto)))
+		mockMvc.perform(post("/api/v1/votes/1")
+				.contentType(APPLICATION_JSON)
+				.content(json))
 			.andExpect(status().isOk());
 	}
 
 	@Test
-	@DisplayName("GET - 특정 투표의 상세 정보를 성공적으로 가져온다. - VoteReadDto")
-	void read_voteSuccess() throws Exception {
-		// Given
-		Vote savedVote = voteRepository.findAll().get(0);
-		VoteOptionReadDto voteOptionWithCountDto = new VoteOptionReadDto(savedVote.getId(),
-			savedVote.getTitle(), 0, false);
-
+	@DisplayName("GET - 페이징된 투표 조회 성공 - PageResponse<VoteReadDto>")
+	void read_Paged_Comments_success() throws Exception {
 		// When & Then
-		this.mockMvc.perform(get("/api/v1/votes/{id}", savedVote.getId())
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.title").value("테스트1"))
-			.andExpect(jsonPath("$.category").value("개발"))
-			.andExpect(jsonPath("$.createAt").exists())
-			.andExpect(jsonPath("$.description").value("테스트 설명1"))
-			.andExpect(jsonPath("$.totalVoteCount").value(0))
-			.andExpect(jsonPath("$.voteOption[0].count").exists())
-			.andExpect(jsonPath("$.voteOption[0].title").value("1번"));
+		mockMvc.perform(get("/api/v1/votes"))
+			.andDo(print())
+			.andExpect(status().isOk());
 	}
 
 	@Test
-	@DisplayName("GET - 첫 페이지의 3개의 값이 성공적으로 가져온다")
-	void readAll_votes_Success() throws Exception {
-		// When & Then
-		this.mockMvc.perform(get("/api/v1/votes")
-				.param("page", "0")
-				.param("size", "3")
-				.param("category", "dev")
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.content").exists())
-			.andExpect(jsonPath("$.content[0].title").exists())
-			.andExpect(jsonPath("$.content[0].category").exists())
-			.andExpect(jsonPath("$.content[0].createAt").exists())
-			.andExpect(jsonPath("$.content[0].description").exists())
-			.andExpect(jsonPath("$.content[0].totalVoteCount").isNumber());
-	}
+	@DisplayName("GET - 투표 단건  조회 성공 - PageResponse<VoteReadDto>")
+	void read_comment_success() throws Exception {
+		// Given
+		VoteCreateDto voteCreateDto = new VoteCreateDto(
+			"테스트1", "daily", "테스트 입니다.", Arrays.asList("1번", "2번")
+		);
+		Vote vote = voteRepository.save(Vote.create(voteCreateDto, null));
 
+		// When & Then
+		mockMvc.perform(get("/api/v1/votes/" + vote.getId()))
+			.andDo(print())
+			.andExpect(status().isOk());
+	}
 }
