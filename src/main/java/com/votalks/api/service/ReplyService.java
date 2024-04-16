@@ -63,6 +63,8 @@ public class ReplyService {
 		final Like like = Like.create();
 		final Reply reply = Reply.create(dto, uuid, vote, like, comment, userNumber);
 
+		comment.plus();
+
 		likeRepository.save(like);
 		replyRepository.save(reply);
 		uuidService.setHttpHeaders(response, uuid);

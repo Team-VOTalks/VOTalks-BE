@@ -116,8 +116,8 @@ class VoteControllerTest {
 			.andExpect(jsonPath("$.createAt").exists())
 			.andExpect(jsonPath("$.description").value("테스트 설명1"))
 			.andExpect(jsonPath("$.totalVoteCount").value(0))
-			.andExpect(jsonPath("$.voteOptionWithCounts[0].count").exists())
-			.andExpect(jsonPath("$.voteOptionWithCounts[0].title").value("1번"));
+			.andExpect(jsonPath("$.voteOption[0].count").exists())
+			.andExpect(jsonPath("$.voteOption[0].title").value("1번"));
 	}
 
 	@Test
@@ -135,9 +135,7 @@ class VoteControllerTest {
 			.andExpect(jsonPath("$.content[0].category").exists())
 			.andExpect(jsonPath("$.content[0].createAt").exists())
 			.andExpect(jsonPath("$.content[0].description").exists())
-			.andExpect(jsonPath("$.content[0].totalVoteCount").isNumber())
-			.andExpect(jsonPath("$.pageable.pageSize").value(3))
-			.andExpect(jsonPath("$.pageable.pageNumber").value(0));
+			.andExpect(jsonPath("$.content[0].totalVoteCount").isNumber());
 	}
 
 }

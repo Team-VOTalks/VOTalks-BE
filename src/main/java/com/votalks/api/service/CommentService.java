@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +27,7 @@ import com.votalks.api.persistence.repository.LikeRepository;
 import com.votalks.api.persistence.repository.ReplyRepository;
 import com.votalks.api.persistence.repository.UuidLikeRepository;
 import com.votalks.api.persistence.repository.VoteRepository;
+import com.votalks.global.common.util.SortType;
 import com.votalks.global.error.exception.NotFoundException;
 import com.votalks.global.error.model.ErrorCode;
 
@@ -69,10 +69,11 @@ public class CommentService {
 		Long voteId,
 		int page,
 		int size,
+		String sort,
 		HttpServletRequest request,
 		HttpServletResponse response
 	) {
-		final Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		final Pageable pageable = getPageable(page, size, sort);
 		final Vote vote = voteRepository.findById(voteId)
 			.orElseThrow(() -> new NotFoundException(ErrorCode.FAIL_NOT_VOTE_FOUND));
 		final Uuid uuid = uuidService.getOrCreate(request, response);
@@ -95,6 +96,11 @@ public class CommentService {
 
 			return Comment.toReadDto(comment, likeType.getValue(), totalReplyCount);
 		}).toList(), pageInfo);
+	}
+
+	public Pageable getPageable(int page, int size, String sortType) {
+		SortType sortTypeEnum = SortType.from(sortType);
+		return PageRequest.of(page, size, sortTypeEnum.getSort());
 	}
 
 	private int determineUserNumber(Vote vote, Uuid uuid) {

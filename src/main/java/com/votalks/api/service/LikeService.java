@@ -44,10 +44,14 @@ public class LikeService {
 
 		uuidLikeRepository.findByUuidAndLike(uuid, like)
 			.ifPresentOrElse(
-				uuidLike -> validateCancelLike(like, likeType, uuidLike),
+				uuidLike -> {
+					validateCancelLike(like, likeType, uuidLike);
+					updatePopularScore(comment);
+				},
 				() -> {
 					UuidLike uuidLike = UuidLike.create(uuid, like, likeType);
 					uuidLikeRepository.save(uuidLike);
+					updatePopularScore(comment);
 				});
 
 		uuidService.setHttpHeaders(response, uuid);
@@ -103,5 +107,13 @@ public class LikeService {
 			like.pressDisLike();
 			uuidLike.dislikeType();
 		}
+	}
+
+	private void updatePopularScore(Comment comment) {
+		Like like = comment.getLike();
+		int totalLikeCount = like.getLikeCount();
+		int totalDislikeCount = like.getDislikeCount();
+		int popularityScore = (totalLikeCount + totalDislikeCount) + (totalLikeCount - totalDislikeCount);
+		comment.judge(popularityScore);
 	}
 }
