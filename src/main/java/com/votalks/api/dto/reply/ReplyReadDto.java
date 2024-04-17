@@ -6,6 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record ReplyReadDto(
+	Long replyId,
 	int userNumber,
 	String content,
 	LocalDateTime createAt,
