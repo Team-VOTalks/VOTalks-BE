@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -27,7 +28,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "tbl_comment")
+@Table(name = "tbl_comment", indexes = {
+	@Index(name = "idx_comment_created_at", columnList = "created_at DESC"),
+	@Index(name = "idx_comment_popular_score", columnList = "popular_score DESC"),
+	@Index(name = "idx_comment_total_reply_count", columnList = "total_reply_count DESC")
+})
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
@@ -43,7 +48,7 @@ public class Comment {
 	@ColumnDefault("0")
 	private int userNumber;
 
-	@Column(name = "total_Reply_Count", nullable = false)
+	@Column(name = "total_reply_count", nullable = false)
 	@ColumnDefault("0")
 	private int totalReplyCount;
 
