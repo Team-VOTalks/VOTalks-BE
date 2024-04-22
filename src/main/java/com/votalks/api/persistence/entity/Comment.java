@@ -106,7 +106,7 @@ public class Comment {
 	public static CommentReadDto toReadDto(Comment comment, String likeType, int totalReplyCount) {
 		return CommentReadDto.builder()
 			.commentId(comment.getId())
-			.userNumber(comment.getUserNumber())
+			.index(comment.getUserNumber())
 			.content(comment.getContent())
 			.likeCount(comment.getLike().getLikeCount())
 			.createAt(comment.getCreatedAt())
