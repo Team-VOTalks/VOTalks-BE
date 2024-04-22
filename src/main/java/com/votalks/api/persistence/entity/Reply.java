@@ -104,7 +104,7 @@ public class Reply {
 	public static ReplyReadDto toReplyReadDto(Reply reply, String likeType) {
 		return ReplyReadDto.builder()
 			.replyId(reply.getId())
-			.userNumber(reply.getUserNumber())
+			.index(reply.getUserNumber())
 			.content(reply.getContent())
 			.likeCount(reply.getLike().getLikeCount())
 			.createAt(reply.getCreatedAt())
