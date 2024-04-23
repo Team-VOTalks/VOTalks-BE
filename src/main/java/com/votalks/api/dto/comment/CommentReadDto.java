@@ -7,7 +7,7 @@ import lombok.Builder;
 @Builder
 public record CommentReadDto(
 	Long commentId,
-	int index,
+	int userIndex,
 	String content,
 	LocalDateTime createAt,
 	int likeCount,
